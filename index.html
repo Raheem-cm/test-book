@@ -2,185 +2,780 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYONI-XMD-WAR | Tanzania Homeland Defense</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>NYONI-XMD-WAR - Defend Tanzania</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #1a1a1a; font-family: 'Courier New', Courier, monospace; }
-        canvas { display: block; background: #4a5d23; /* Map ya msituni */ }
-        
-        /* UI ya Mchezo */
-        #game-ui {
-            position: absolute; top: 10px; left: 10px; color: #fff;
-            background: rgba(0, 0, 0, 0.7); padding: 15px; border-radius: 8px;
-            border: 2px solid #1e592f; pointer-events: none;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
         }
 
-        #crosshair {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 30px; height: 30px; border: 2px solid red; border-radius: 50%; pointer-events: none;
+        body {
+            background: linear-gradient(145deg, #0a1f0e 0%, #071a0c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', 'VT323', monospace;
+            overflow: hidden;
+            touch-action: none;
         }
 
-        #start-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 1000;
+        /* Game Container */
+        .game-container {
+            position: relative;
+            border-radius: 28px;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,215,0,0.3);
+            background: #000000aa;
+            backdrop-filter: blur(2px);
         }
 
-        .btn-deploy {
-            padding: 20px 60px; font-size: 28px; background: #1e592f; color: #ffd700;
-            border: 4px solid #ffd700; cursor: pointer; font-weight: bold; transition: 0.3s;
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 24px;
+            box-shadow: 0 0 0 4px #f5b642, 0 0 0 8px #1e3a1e;
+            cursor: crosshair;
         }
 
-        .btn-deploy:hover { background: #ffd700; color: #1e592f; }
-        h1 { color: #ffd700; font-size: 50px; text-shadow: 2px 2px #000; }
+        /* HUD overlay */
+        .hud {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            z-index: 10;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #000000aa;
+        }
+
+        .stats {
+            background: #000000aa;
+            backdrop-filter: blur(4px);
+            padding: 8px 18px;
+            border-radius: 40px;
+            border-left: 4px solid #ffcc44;
+            font-size: 1.2rem;
+            color: #ffefcf;
+            font-family: monospace;
+        }
+
+        .stats span {
+            color: #ffd966;
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .mission {
+            background: #000000aa;
+            backdrop-filter: blur(4px);
+            padding: 8px 18px;
+            border-radius: 40px;
+            border-right: 4px solid #ff4444;
+            font-size: 0.9rem;
+            text-align: right;
+            color: #fff0b5;
+        }
+
+        .controls-panel {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .btn-virtual {
+            pointer-events: auto;
+            background: #2c2c2cee;
+            backdrop-filter: blur(8px);
+            border: 2px solid #d4af37;
+            border-radius: 60px;
+            padding: 8px 18px;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: #ffefaf;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 5px 0 #5a3e1a;
+        }
+
+        .btn-virtual:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #5a3e1a;
+        }
+
+        .restart-btn {
+            background: #b13e3eee;
+            border-color: #ffaa66;
+        }
+
+        @media (max-width: 700px) {
+            .stats { font-size: 0.8rem; padding: 4px 12px;}
+            .stats span { font-size: 1.2rem;}
+            .mission { font-size: 0.7rem;}
+            .btn-virtual { padding: 5px 12px; font-size: 0.9rem;}
+        }
+
+        .flag-icon {
+            display: inline-block;
+            width: 24px;
+            height: 18px;
+            background: linear-gradient(90deg, #1eb53a 33%, #ffce00 33%, #ffce00 66%, #00a3dd 66%);
+            border-radius: 4px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
-
-<div id="start-screen">
-    <h1>NYONI-XMD-WAR</h1>
-    <p style="color: white; font-size: 20px;">Protect Tanzania Border & NYONI-XMD-CAMP</p>
-    <button class="btn-deploy" onclick="startGame()">DEPLOY JWTZ FORCES</button>
+<div class="game-container">
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    <div class="hud">
+        <div class="stats">
+            🛡️ TANZANIA DEFENDER<br>
+            SCORE: <span id="scoreValue">0</span> &nbsp;|&nbsp; 💥 KILLS: <span id="killCount">0</span>
+        </div>
+        <div class="mission">
+            <div class="flag-icon"></div> NYONI-XMD-CAMP<br>
+            🇹🇿 PROTECT ARDHI YA TANZANIA 🇹🇿<br>
+            🔫 WAHALIFU WANAINGIA!
+        </div>
+    </div>
+    <div class="controls-panel">
+        <div class="btn-virtual" id="fireBtn">🔫 FIRE</div>
+        <div class="btn-virtual restart-btn" id="restartBtn">🔄 RESIST</div>
+    </div>
 </div>
-
-<div id="game-ui">
-    <div style="color: #ffd700; font-weight: bold;">UNIT: NYONI SPECIAL FORCES (JWTZ)</div>
-    <div>MISSION: DEFEND THE CAMP</div>
-    <hr>
-    <div>HEALTH: <span id="hp">100%</span></div>
-    <div>AMMO: <span id="ammo">30/30</span></div>
-    <div>ENEMIES KILLED: <span id="kills">0</span></div>
-</div>
-
-<div id="crosshair"></div>
-<canvas id="warCanvas"></canvas>
 
 <script>
-    const canvas = document.getElementById('warCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    (function(){
+        // ---------- CANVAS ----------
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-    let isRunning = false;
-    let kills = 0;
-    let hp = 100;
-    let ammo = 30;
-    
-    const bullets = [];
-    const enemies = [];
-    const soldier = { x: canvas.width/2, y: canvas.height - 100, speed: 5, angle: 0 };
+        // Dimensions
+        let width = 1000;
+        let height = 600;
+        canvas.width = width;
+        canvas.height = height;
 
-    // NYONI-XMD-CAMP Location
-    const camp = { x: canvas.width/2 - 200, y: 10, w: 400, h: 120 };
+        // ---------- GAME STATE ----------
+        let score = 0;
+        let killCount = 0;
+        let gameRunning = true;
+        let playerHealth = 100;
+        let ammo = 30;
+        let maxAmmo = 30;
+        let reloading = false;
 
-    window.addEventListener('keydown', e => keys[e.code] = true);
-    window.addEventListener('keyup', e => keys[e.code] = false);
-    const keys = {};
+        // Player position (center bottom, movable left/right)
+        let playerX = width/2;
+        const playerY = height - 65;
+        const playerRadius = 20;
 
-    window.addEventListener('mousemove', e => {
-        soldier.angle = Math.atan2(e.clientY - soldier.y, e.clientX - soldier.x);
-    });
+        // Mouse / touch aim (crosshair)
+        let aimX = width/2;
+        let aimY = height/2;
 
-    window.addEventListener('mousedown', () => {
-        if (ammo > 0 && isRunning) {
-            bullets.push({
-                x: soldier.x, y: soldier.y,
-                vx: Math.cos(soldier.angle) * 12,
-                vy: Math.sin(soldier.angle) * 12
+        // Enemies array (wahalifu)
+        let enemies = [];
+
+        // Vehicles: magari bia na pikipiki (enemy vehicles)
+        let vehicles = [];
+
+        // Buildings & special camp NYONI-XMD-CAMP
+        let buildings = [];
+
+        // Bullets array
+        let bullets = [];
+
+        // Particle effects (blood/dust)
+        let particles = [];
+
+        // Timers & cooldown
+        let lastShot = 0;
+        const shotCooldown = 280; // ms
+        let enemySpawnTimer = 0;
+        let vehicleSpawnTimer = 0;
+
+        // Tanzanian soldiers (friendly NPCs guarding)
+        let friendlySoldiers = [];
+
+        // ---------- ASSETS / IMAGES (simulated with Canvas drawing) but we will mimic the style like World War Heroes----------
+        // I will create detailed graphic style: TPDF soldiers in JWTZ uniforms (green, tan berets, flag patches)
+
+        // Helper: draw flag of Tanzania on uniform
+        function drawTanzaniaFlag(ctx, x, y, w, h){
+            ctx.save();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#1EB53A";
+            ctx.fillRect(x, y, w/3, h);
+            ctx.fillStyle = "#FFCE00";
+            ctx.fillRect(x + w/3, y, w/3, h);
+            ctx.fillStyle = "#00A3DD";
+            ctx.fillRect(x + 2*w/3, y, w/3, h);
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + w, y + h);
+            ctx.lineTo(x + w, y);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x, y + h);
+            ctx.lineTo(x + w, y);
+            ctx.lineTo(x, y);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Initialize buildings (majengo yote hadi ya pista, plus NYONI-XMD-CAMP)
+        function initBuildings(){
+            buildings = [];
+            // Main Camp: NYONI-XMD-CAMP (left side stronghold)
+            buildings.push({
+                x: 70, y: height-170, w: 140, h: 140,
+                type: "camp",
+                name: "NYONI-XMD-CAMP",
+                health: 500,
+                maxHealth: 500
             });
+            // Barracks / HQ
+            buildings.push({ x: 260, y: height-130, w: 100, h: 100, type: "barracks" });
+            // Pista (airstrip control tower)
+            buildings.push({ x: 480, y: height-90, w: 90, h: 70, type: "tower" });
+            // Hospital/ Depot
+            buildings.push({ x: 670, y: height-120, w: 100, h: 100, type: "depot" });
+            // Watchtower
+            buildings.push({ x: 820, y: height-150, w: 70, h: 130, type: "watchtower" });
+            // Small huts & defensive positions
+            buildings.push({ x: 40, y: height-280, w: 55, h: 55, type: "hut" });
+            buildings.push({ x: 900, y: height-280, w: 55, h: 55, type: "hut" });
+            buildings.push({ x: 520, y: height-220, w: 65, h: 60, type: "garage" });
+        }
+
+        // Spawn friendly TPDF soldiers (wanajeshi wavae nguo za Tanzania)
+        function initFriendlySoldiers(){
+            friendlySoldiers = [];
+            let positions = [[180, height-55], [340, height-60], [550, height-70], [730, height-55], [880, height-60], [120, height-150], [780, height-150]];
+            for(let i=0;i<positions.length;i++){
+                friendlySoldiers.push({
+                    x: positions[i][0],
+                    y: positions[i][1],
+                    radius: 14,
+                    health: 80,
+                    active: true
+                });
+            }
+        }
+
+        // Enemy class (wahalifu)
+        class Enemy {
+            constructor(x, y, type){
+                this.x = x;
+                this.y = y;
+                this.type = type || "infantry";
+                this.radius = this.type === "heavy" ? 18 : 14;
+                this.health = this.type === "heavy" ? 60 : 35;
+                this.speed = this.type === "heavy" ? 0.9 : 1.4;
+                this.damage = 12;
+                this.color = "#3a2a1e";
+            }
+            update(){
+                // Move towards player or camp (ardhi)
+                let dx = playerX - this.x;
+                let dy = playerY - this.y;
+                let len = Math.hypot(dx,dy);
+                if(len > 0.1){
+                    let moveX = (dx/len)*this.speed;
+                    let moveY = (dy/len)*this.speed;
+                    this.x += moveX;
+                    this.y += moveY;
+                }
+                // Boundary
+                this.x = Math.min(width-20, Math.max(20, this.x));
+                this.y = Math.min(height-40, Math.max(30, this.y));
+            }
+            draw(ctx){
+                ctx.save();
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = "black";
+                // Militia look
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "#5d3a1a";
+                ctx.beginPath();
+                ctx.ellipse(this.x-3, this.y-3, 4, 5, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "#222";
+                ctx.beginPath();
+                ctx.arc(this.x-4, this.y-4, 2, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x-8, this.y-12, 16, 5);
+                ctx.fillStyle = "#bc9a6c";
+                ctx.fillRect(this.x-4, this.y+2, 8, 4);
+                ctx.fillStyle = "darkred";
+                ctx.font = "bold 12 monospace";
+                ctx.fillText("WAHALIFU", this.x-22, this.y-12);
+                ctx.restore();
+            }
+        }
+
+        // Vehicle class (magari na pikipiki)
+        class Vehicle {
+            constructor(x, y, type){
+                this.x = x;
+                this.y = y;
+                this.type = type; // "car" or "bike"
+                this.w = type === "car" ? 38 : 24;
+                this.h = type === "car" ? 24 : 18;
+                this.health = type === "car" ? 70 : 45;
+                this.speed = type === "car" ? 1.6 : 2.2;
+            }
+            update(){
+                let dx = playerX - this.x;
+                let dy = playerY - this.y;
+                let len = Math.hypot(dx,dy);
+                if(len>0.1){
+                    this.x += (dx/len)*this.speed;
+                    this.y += (dy/len)*this.speed;
+                }
+                this.x = Math.min(width-30, Math.max(15, this.x));
+                this.y = Math.min(height-45, Math.max(40, this.y));
+            }
+            draw(ctx){
+                ctx.fillStyle = this.type === "car" ? "#4a6e3c" : "#b87c4f";
+                ctx.fillRect(this.x-this.w/2, this.y-this.h/2, this.w, this.h);
+                ctx.fillStyle = "#2c2c2c";
+                ctx.fillRect(this.x-this.w/3, this.y-this.h/2-4, 10, 6);
+                ctx.fillRect(this.x+this.w/3-8, this.y-this.h/2-4, 10, 6);
+                ctx.fillStyle = "gold";
+                if(this.type==="bike") ctx.fillStyle = "orange";
+                ctx.fillRect(this.x-5, this.y-8, 10, 6);
+                ctx.fillStyle = "#333";
+                ctx.fillRect(this.x-12, this.y+4, 24, 5);
+            }
+        }
+
+        // Bullet
+        class Bullet {
+            constructor(x, y, targetX, targetY){
+                this.x = x;
+                this.y = y;
+                let angle = Math.atan2(targetY - y, targetX - x);
+                this.vx = Math.cos(angle) * 12;
+                this.vy = Math.sin(angle) * 12;
+                this.radius = 4;
+                this.life = true;
+            }
+            update(){
+                this.x += this.vx;
+                this.y += this.vy;
+                if(this.x<0 || this.x>width || this.y<0 || this.y>height) this.life = false;
+            }
+            draw(ctx){
+                ctx.fillStyle = "#FFD966";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "orange";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        // Particles
+        function addParticles(x,y,color){
+            for(let i=0;i<6;i++){
+                particles.push({
+                    x:x, y:y, vx:(Math.random()-0.5)*5, vy:(Math.random()-0.5)*5, life:1, color:color, size:4
+                });
+            }
+        }
+
+        // shooting
+        function shootAt(aimX, aimY){
+            if(!gameRunning) return false;
+            if(reloading) return false;
+            if(ammo <=0){
+                reloading = true;
+                setTimeout(()=>{
+                    ammo = maxAmmo;
+                    reloading = false;
+                }, 1200);
+                return false;
+            }
+            let now = Date.now();
+            if(now - lastShot < shotCooldown) return false;
+            lastShot = now;
             ammo--;
-            updateUI();
+            bullets.push(new Bullet(playerX, playerY-10, aimX, aimY));
+            return true;
         }
-    });
 
-    function startGame() {
-        document.getElementById('start-screen').style.display = 'none';
-        isRunning = true;
-        spawnEnemy();
-        update();
-    }
+        // Collision & update
+        function updateGame(){
+            if(!gameRunning) return;
 
-    function spawnEnemy() {
-        if(isRunning) {
-            enemies.push({ x: Math.random() * canvas.width, y: -50, speed: 2 + (kills/10) });
-            setTimeout(spawnEnemy, 1500);
-        }
-    }
+            // update bullets & hit detection
+            for(let i=0;i<bullets.length;i++){
+                bullets[i].update();
+                if(!bullets[i].life){
+                    bullets.splice(i,1);
+                    i--;
+                    continue;
+                }
+                let hit = false;
+                // enemy infantry
+                for(let j=0;j<enemies.length;j++){
+                    let e = enemies[j];
+                    let dx = bullets[i].x - e.x;
+                    let dy = bullets[i].y - e.y;
+                    if(Math.hypot(dx,dy) < e.radius+5){
+                        e.health -= 34;
+                        addParticles(e.x, e.y, "#ff6600");
+                        if(e.health <=0){
+                            enemies.splice(j,1);
+                            killCount++;
+                            score += 20;
+                            updateUI();
+                            addParticles(e.x, e.y, "#ff0000");
+                        }
+                        bullets.splice(i,1);
+                        hit=true;
+                        break;
+                    }
+                }
+                if(hit) {i--; continue;}
+                // vehicles hit
+                for(let v=0;v<vehicles.length;v++){
+                    let veh = vehicles[v];
+                    let left = veh.x-veh.w/2, right=veh.x+veh.w/2, top=veh.y-veh.h/2, bottom=veh.y+veh.h/2;
+                    if(bullets[i].x>left && bullets[i].x<right && bullets[i].y>top && bullets[i].y<bottom){
+                        veh.health -= 45;
+                        addParticles(veh.x, veh.y, "#888");
+                        if(veh.health<=0){
+                            vehicles.splice(v,1);
+                            killCount++;
+                            score+=25;
+                            updateUI();
+                        }
+                        bullets.splice(i,1);
+                        hit=true;
+                        break;
+                    }
+                }
+                if(hit) continue;
+            }
 
-    function updateUI() {
-        document.getElementById('hp').innerText = hp + "%";
-        document.getElementById('ammo').innerText = ammo + "/30";
-        document.getElementById('kills').innerText = kills;
-    }
+            // update enemies
+            for(let i=0;i<enemies.length;i++){
+                enemies[i].update();
+                // damage player on collision
+                let dxp = enemies[i].x - playerX;
+                let dyp = enemies[i].y - playerY;
+                if(Math.hypot(dxp,dyp) < playerRadius+enemies[i].radius){
+                    playerHealth -= enemies[i].damage;
+                    addParticles(playerX, playerY, "#ff4444");
+                    enemies.splice(i,1);
+                    i--;
+                    if(playerHealth<=0){
+                        gameRunning = false;
+                        alert("🇹🇿 UHURU! Umeanguka lakini Tanzania itashinda! Click RESIST to fight again! 🇹🇿");
+                    }
+                    updateUI();
+                    continue;
+                }
+                // damage camp
+                let camp = buildings.find(b=>b.type==="camp");
+                if(camp && Math.hypot(enemies[i].x - (camp.x+camp.w/2), enemies[i].y - (camp.y+camp.h/2)) < 45){
+                    camp.health -= 8;
+                    addParticles(camp.x+camp.w/2, camp.y+camp.h/2, "#a55");
+                    enemies.splice(i,1);
+                    i--;
+                    if(camp.health<=0){
+                        gameRunning = false;
+                        alert("⚠️ NYONI-XMD-CAMP imeharibiwa! WATANZANIA WATAKUWA IMARA! Bonyeza RESIST kuendelea kupambana! ⚠️");
+                    }
+                }
+            }
 
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Map Decoration (Tanzania Savanna/Greenery)
-        ctx.fillStyle = "#3e4d21"; ctx.fillRect(0,0, canvas.width, canvas.height);
-
-        // NYONI-XMD-CAMP Building
-        ctx.fillStyle = "#333";
-        ctx.fillRect(camp.x, camp.y, camp.w, camp.h);
-        ctx.strokeStyle = "gold"; ctx.lineWidth = 5;
-        ctx.strokeRect(camp.x, camp.y, camp.w, camp.h);
-        ctx.fillStyle = "#fff"; ctx.font = "bold 24px Arial";
-        ctx.fillText("NYONI-XMD-CAMP (HEADQUARTERS)", camp.x + 15, camp.y + 70);
-
-        // Magari na Pikipiki za Jeshi (Static)
-        ctx.fillStyle = "#1b3314"; ctx.fillRect(100, 400, 100, 50); // JWTZ Tank
-        ctx.fillText("JWTZ TANK", 100, 470);
-        
-        // JWTZ Soldier (Player)
-        ctx.save();
-        ctx.translate(soldier.x, soldier.y);
-        ctx.rotate(soldier.angle);
-        ctx.fillStyle = "#2e4d23"; // Gwanda la kijani la JWTZ
-        ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = "black"; ctx.fillRect(15, -5, 30, 10); // Bunduki
-        ctx.restore();
-
-        // Risasi
-        bullets.forEach((b, i) => {
-            b.x += b.vx; b.y += b.vy;
-            ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
-            if(b.y < 0) bullets.splice(i, 1);
-        });
-
-        // Maadui
-        enemies.forEach((en, i) => {
-            en.y += en.speed;
-            ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(en.x, en.y, 18, 0, Math.PI*2); ctx.fill();
-            
-            // Bullet hit
-            bullets.forEach((b, bi) => {
-                if(Math.hypot(en.x - b.x, en.y - b.y) < 25) {
-                    enemies.splice(i, 1);
-                    bullets.splice(bi, 1);
-                    kills++;
+            // update vehicles damage player
+            for(let i=0;i<vehicles.length;i++){
+                vehicles[i].update();
+                let dxv = vehicles[i].x - playerX;
+                let dyv = vehicles[i].y - playerY;
+                if(Math.hypot(dxv,dyv) < playerRadius+15){
+                    playerHealth -= 18;
+                    addParticles(playerX, playerY, "red");
+                    vehicles.splice(i,1);
+                    i--;
+                    if(playerHealth<=0){
+                        gameRunning = false;
+                        alert("🇹🇿 SHUHEDA! Bado ardhi yetu! RESIST kwa nguvu!");
+                    }
                     updateUI();
                 }
-            });
-
-            // Camp Attack
-            if(en.y > camp.y + camp.h - 20 && en.x > camp.x && en.x < camp.x + camp.w) {
-                alert("MISSION FAILED! NYONI-XMD-CAMP WAS CAPTURED.");
-                location.reload();
             }
+
+            // friendly soldiers attack (auto kill nearby enemies)
+            for(let f of friendlySoldiers){
+                if(!f.active) continue;
+                for(let i=0;i<enemies.length;i++){
+                    let e = enemies[i];
+                    if(Math.hypot(f.x - e.x, f.y - e.y) < 35){
+                        e.health -= 18;
+                        if(e.health<=0){
+                            enemies.splice(i,1);
+                            killCount++;
+                            score+=15;
+                            updateUI();
+                        }
+                        break;
+                    }
+                }
+                for(let v=0;v<vehicles.length;v++){
+                    if(Math.hypot(f.x - vehicles[v].x, f.y - vehicles[v].y) < 40){
+                        vehicles[v].health -= 20;
+                        if(vehicles[v].health<=0){
+                            vehicles.splice(v,1);
+                            killCount++;
+                            score+=20;
+                            updateUI();
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // spawn enemies dynamically (wahalifu)
+            if(enemies.length < 12 && Math.random()<0.02){
+                let side = Math.random()<0.5? 20 : width-20;
+                let ySpawn = Math.random() * (height-150) + 40;
+                let type = Math.random()<0.3 ? "heavy" : "infantry";
+                enemies.push(new Enemy(side, ySpawn, type));
+            }
+            if(vehicles.length < 4 && Math.random()<0.015){
+                let side = Math.random()<0.5? 15 : width-15;
+                let vehType = Math.random()<0.6 ? "car" : "bike";
+                vehicles.push(new Vehicle(side, Math.random()*(height-120)+50, vehType));
+            }
+
+            updateUI();
+        }
+
+        // particles update
+        function updateParticles(){
+            for(let i=0;i<particles.length;i++){
+                particles[i].x += particles[i].vx;
+                particles[i].y += particles[i].vy;
+                particles[i].life -= 0.04;
+                if(particles[i].life<=0){
+                    particles.splice(i,1);
+                    i--;
+                }
+            }
+        }
+
+        function updateUI(){
+            document.getElementById('scoreValue').innerText = score;
+            document.getElementById('killCount').innerText = killCount;
+        }
+
+        // DRAW EVERYTHING (ardhi, majengo, wanajeshi, magari, enemies)
+        function draw(){
+            if(!ctx) return;
+            // sky & ground (savanna)
+            ctx.fillStyle = "#3c8c40";
+            ctx.fillRect(0,0,width,height);
+            ctx.fillStyle = "#5b8c5a";
+            for(let i=0;i<200;i++){ ctx.fillRect(i*30, height-35, 12, 8); }
+            ctx.fillStyle = "#a57c4c";
+            ctx.fillRect(0, height-45, width, 45);
+            ctx.fillStyle = "#6f4e2e";
+            for(let i=0;i<15;i++){ ctx.fillRect(i*70, height-52, 25, 8); }
+            
+            // draw Buildings (majengo yote)
+            for(let b of buildings){
+                ctx.fillStyle = b.type==="camp" ? "#8b5a2b" : "#bc9a6c";
+                ctx.fillRect(b.x, b.y, b.w, b.h);
+                ctx.fillStyle = "#6b3e1a";
+                ctx.fillRect(b.x+5, b.y+5, b.w-10, 8);
+                if(b.type==="camp"){
+                    ctx.fillStyle = "#d4af37";
+                    ctx.font = "bold 14px monospace";
+                    ctx.fillText("⭐ NYONI-XMD-CAMP ⭐", b.x+10, b.y-8);
+                    ctx.fillStyle = "#c97e3a";
+                    ctx.fillRect(b.x+20, b.y+b.h-20, 30, 18);
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(b.x+25, b.y+b.h-18, 20, 8);
+                    // health bar
+                    let healthPercent = b.health/b.maxHealth;
+                    ctx.fillStyle = "#ff4444";
+                    ctx.fillRect(b.x, b.y-12, b.w, 8);
+                    ctx.fillStyle = "#44ff44";
+                    ctx.fillRect(b.x, b.y-12, b.w*healthPercent, 8);
+                }
+                if(b.type==="tower"){
+                    ctx.fillStyle = "#5a5a5a";
+                    ctx.fillRect(b.x+30, b.y-40, 25, 40);
+                }
+            }
+
+            // Tanzanian soldiers (JWTZ uniform)
+            for(let s of friendlySoldiers){
+                ctx.fillStyle = "#3a784a";
+                ctx.beginPath();
+                ctx.ellipse(s.x, s.y, 10, 12, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "#cd9a5b";
+                ctx.fillRect(s.x-6, s.y-8, 12, 6);
+                drawTanzaniaFlag(ctx, s.x-4, s.y-12, 12, 8);
+                ctx.fillStyle = "#2c2c2c";
+                ctx.fillRect(s.x-2, s.y+4, 4, 6);
+                ctx.fillStyle = "white";
+                ctx.font = "bold 10px monospace";
+                ctx.fillText("TPDF", s.x-12, s.y-12);
+            }
+
+            // enemies
+            for(let e of enemies) e.draw(ctx);
+            // vehicles
+            for(let v of vehicles) v.draw(ctx);
+            // player (Hero askari)
+            ctx.fillStyle = "#2c6e3c";
+            ctx.beginPath();
+            ctx.arc(playerX, playerY, playerRadius, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#f4c542";
+            ctx.fillRect(playerX-12, playerY-20, 24, 10);
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(playerX-4, playerY-22, 8, 6);
+            drawTanzaniaFlag(ctx, playerX-14, playerY-26, 28, 12);
+            ctx.fillStyle = "#ffd966";
+            ctx.font = "bold 16px monospace";
+            ctx.fillText("🇹🇿", playerX-10, playerY-18);
+            // weapon & ammo
+            ctx.fillStyle = "white";
+            ctx.font = "bold 14px monospace";
+            ctx.fillText(`🔫 AMMO: ${ammo}/${maxAmmo} ${reloading? "RELOAD...":""}`, playerX-40, playerY-32);
+            // health bar
+            ctx.fillStyle = "#aa2222";
+            ctx.fillRect(playerX-25, playerY-42, 50, 8);
+            ctx.fillStyle = "#22aa22";
+            ctx.fillRect(playerX-25, playerY-42, 50*(playerHealth/100), 8);
+            
+            // Crosshair
+            ctx.beginPath();
+            ctx.strokeStyle = "#fff5cc";
+            ctx.lineWidth = 2;
+            ctx.moveTo(aimX-12, aimY);
+            ctx.lineTo(aimX-4, aimY);
+            ctx.moveTo(aimX+4, aimY);
+            ctx.lineTo(aimX+12, aimY);
+            ctx.moveTo(aimX, aimY-12);
+            ctx.lineTo(aimX, aimY-4);
+            ctx.moveTo(aimX, aimY+4);
+            ctx.lineTo(aimX, aimY+12);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(aimX, aimY, 8, 0, Math.PI*2);
+            ctx.stroke();
+
+            // particles
+            for(let p of particles){
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size*p.life, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        // EVENT HANDLERS (mouse + touch)
+        function handleAim(e){
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if(e.touches){
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            let canvasX = (clientX - rect.left) * scaleX;
+            let canvasY = (clientY - rect.top) * scaleY;
+            canvasX = Math.min(width, Math.max(0, canvasX));
+            canvasY = Math.min(height, Math.max(0, canvasY));
+            aimX = canvasX;
+            aimY = canvasY;
+        }
+        function handleFire(e){
+            e.preventDefault();
+            shootAt(aimX, aimY);
+        }
+        function handleMove(e){
+            handleAim(e);
+            if(e.touches && e.touches.length>1) return;
+            // optional: player move via mouse/touch drag?
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX || (e.touches? e.touches[0].clientX:0);
+            let newX = (clientX - rect.left) * (width/rect.width);
+            newX = Math.min(width-35, Math.max(35, newX));
+            playerX = newX;
+        }
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('click', handleFire);
+        canvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); handleMove(e); });
+        canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); handleFire(e); handleAim(e); });
+        document.getElementById('fireBtn').addEventListener('click', ()=>shootAt(aimX, aimY));
+        document.getElementById('restartBtn').addEventListener('click', ()=>{
+            gameRunning = true;
+            playerHealth = 100;
+            ammo = maxAmmo;
+            score = 0;
+            killCount = 0;
+            enemies = [];
+            vehicles = [];
+            bullets = [];
+            particles = [];
+            reloading = false;
+            const campObj = buildings.find(b=>b.type==="camp");
+            if(campObj) campObj.health = campObj.maxHealth;
+            playerX = width/2;
+            updateUI();
         });
-    }
 
-    function update() {
-        if(!isRunning) return;
-        if (keys['KeyW']) soldier.y -= soldier.speed;
-        if (keys['KeyS']) soldier.y += soldier.speed;
-        if (keys['KeyA']) soldier.x -= soldier.speed;
-        if (keys['KeyD']) soldier.x += soldier.speed;
+        function gameLoop(){
+            if(gameRunning){
+                updateGame();
+                updateParticles();
+            }
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
         
-        draw();
-        requestAnimationFrame(update);
-    }
+        initBuildings();
+        initFriendlySoldiers();
+        updateUI();
+        gameLoop();
+    })();
 </script>
-
 </body>
 </html>
