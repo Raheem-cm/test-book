@@ -2,477 +2,150 @@
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NYONI-XMD AI | Smart Auto-Reply Assistant</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYONI-XMD-AI | PS2 Games Hub</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         :root {
-            --neon-blue: #00d2ff;
-            --dark-bg: #0a0a0a;
-            --card-bg: #141414;
-            --text-light: #ffffff;
-            --text-dim: #aaaaaa;
+            --primary-color: #003791; /* PS2 Blue */
+            --accent-color: #e6b800;
+            --bg-dark: #050505;
         }
 
         body {
-            background: var(--dark-bg);
-            color: var(--text-light);
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        header {
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 14px;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             text-align: center;
-            border-bottom: 2px solid var(--neon-blue);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        header img {
-            height: 42px;
-            filter: drop-shadow(0 0 8px var(--neon-blue));
-        }
-
-        .logo-text {
-            font-size: 20px;
-            font-weight: bold;
-            background: linear-gradient(135deg, var(--neon-blue), #ff66cc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        #chat-box {
-            padding: 90px 16px 130px 16px;
+        /* Muundo wa Picha ya Juu */
+        header {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://files.catbox.moe/e2xq6c.jpeg');
+            background-size: cover;
+            background-position: center;
+            height: 250px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            height: 100vh;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-        }
-
-        #chat-box::-webkit-scrollbar {
-            width: 5px;
-        }
-        #chat-box::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-        #chat-box::-webkit-scrollbar-thumb {
-            background: var(--neon-blue);
-            border-radius: 10px;
-        }
-
-        .msg {
-            max-width: 85%;
-            padding: 12px 18px;
-            border-radius: 20px;
-            font-size: 15px;
-            line-height: 1.5;
-            word-wrap: break-word;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .user {
-            align-self: flex-end;
-            background: linear-gradient(135deg, var(--neon-blue), #0099cc);
-            color: #000;
-            border-bottom-right-radius: 5px;
-            font-weight: 500;
-        }
-
-        .ai {
-            align-self: flex-start;
-            background: var(--card-bg);
-            border: 1px solid #2a2a2a;
-            border-bottom-left-radius: 5px;
-        }
-
-        .ai strong {
-            color: var(--neon-blue);
-        }
-
-        .typing-indicator {
-            align-self: flex-start;
-            background: var(--card-bg);
-            padding: 12px 18px;
-            border-radius: 20px;
-            display: flex;
-            gap: 4px;
+            justify-content: center;
             align-items: center;
-            border: 1px solid #2a2a2a;
+            border-bottom: 4px solid var(--accent-color);
         }
 
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--neon-blue);
-            border-radius: 50%;
-            animation: typingAnim 1.4s infinite;
+        header h1 {
+            font-size: 3rem;
+            margin: 0;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+            color: var(--accent-color);
         }
 
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typingAnim {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-8px); opacity: 1; }
-        }
-
-        .input-container {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(12px);
-            padding: 14px 12px 20px;
-            border-top: 1px solid #222;
-            z-index: 1000;
-        }
-
-        .input-area {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        input {
-            flex: 1;
-            background: #1e1e1e;
-            border: 1px solid #333;
-            padding: 14px 20px;
-            color: #fff;
-            border-radius: 30px;
-            outline: none;
-            font-size: 15px;
-            transition: all 0.2s;
-        }
-
-        input:focus {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.2);
-        }
-
-        button {
-            background: var(--neon-blue);
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
+        /* Sehemu ya Emulator */
+        .game-container {
+            margin: 20px auto;
+            width: 90%;
+            max-width: 800px;
+            background: #111;
+            border: 2px solid #333;
+            height: 450px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #000;
-            font-size: 20px;
-            transition: transform 0.1s, box-shadow 0.2s;
+            position: relative;
         }
 
-        button:active {
-            transform: scale(0.95);
+        .game-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
-        .v-btn {
-            background: #2a2a2a;
-            color: #aaa;
+        /* Orodha ya Michezo */
+        .game-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
         }
 
-        .v-on {
-            background: #ffcc00;
-            color: #000;
-            box-shadow: 0 0 12px #ffcc00;
-            animation: voicePulse 1.5s infinite;
+        .game-card {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid #444;
         }
 
-        @keyframes voicePulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.6); }
-            70% { box-shadow: 0 0 0 8px rgba(255, 204, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
+        .game-card:hover {
+            background: var(--primary-color);
+            transform: scale(1.05);
         }
 
-        .status-badge {
-            text-align: center;
-            font-size: 10px;
-            margin-top: 8px;
-            color: #666;
+        .game-card img {
+            width: 100%;
+            border-radius: 5px;
         }
 
-        @media (max-width: 550px) {
-            .msg { max-width: 92%; font-size: 14px; }
-            button { width: 46px; height: 46px; }
+        footer {
+            padding: 20px;
+            background: #111;
+            margin-top: 50px;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="logo-text">⚡ NYONI-XMD AI ⚡</div>
-    <div style="font-size: 11px; color: var(--neon-blue);">Mshauri Halisi • Smart Auto-Reply</div>
+    <h1>NYONI-XMD-AI</h1>
+    <p>Cheza Michezo ya PS2 Moja kwa Moja Browser!</p>
 </header>
 
-<div id="chat-box">
-    <div class="msg ai">
-        <strong>🧠 NYONI-XMD AI</strong><br><br>
-        Mambo vipi Boss! 🙌<br><br>
-        Mimi ni mshauri wako mwenye akili ya kisasa. Ninaelewa lugha yako, natoa ushauri wa <strong>teknolojia, biashara, mapenzi, maisha na kila kitu</strong>.<br><br>
-        ✅ <strong>Hapa nina akili yangu mwenyewe</strong> - sijitegemea API za nje, ninajibu kwa busara na hekima.<br><br>
-        👆 Bonyeza kitufe cha njano kuwasha sauti, nizungumze nawe!<br>
-        💬 Uliza chochote...
+<main>
+    <h2>Kicheza Michezo (Screen)</h2>
+    <div class="game-container" id="player">
+        <p style="color: #666;">Chagua mchezo hapo chini kuanza kucheza...</p>
     </div>
-</div>
 
-<div class="input-container">
-    <div class="input-area">
-        <input type="text" id="query" placeholder="Uliza chochote... Biashara, mapenzi, tech, maisha..." autocomplete="off">
-        <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
-        <button id="vBtn" class="v-btn"><i class="fas fa-volume-up"></i></button>
+    <h2>Maktaba ya Magemu</h2>
+    <div class="game-list">
+        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/41635-grand-theft-auto-san-andreas.html')">
+            <p>GTA San Andreas</p>
+        </div>
+
+        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/41551-god-of-war-ii.html')">
+            <p>God of War II</p>
+        </div>
+
+        <div class="game-card" onclick="playPlayer('https://www.retrogames.cc/embed/42601-naruto-shippuden-ultimate-ninja-5.html')">
+            <p>Naruto Shippuden 5</p>
+        </div>
+
+        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/42442-pro-evolution-soccer-2013.html')">
+            <p>PES 2013</p>
+        </div>
+        
+        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/41648-tekken-5.html')">
+            <p>Tekken 5</p>
+        </div>
     </div>
-    <div class="status-badge">🤖 AI In-line Intelligence • 24/7 Active</div>
-</div>
+</main>
+
+<footer>
+    &copy; 2026 NYONI-XMD-AI - Powered by Retro Games Engine
+</footer>
 
 <script>
-    // ============================================
-    // NYONI-XMD AI - SMART AUTO-REPLY ENGINE
-    // No external APIs - fully self-contained
-    // ============================================
-    
-    let voiceActive = false;
-    const chatBox = document.getElementById('chat-box');
-    const queryInput = document.getElementById('query');
-    const sendBtn = document.getElementById('sendBtn');
-    
-    // Show typing indicator
-    function showTyping() {
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'typing-indicator';
-        typingDiv.id = 'typing-indicator';
-        typingDiv.innerHTML = `
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <span style="margin-left: 8px; font-size: 12px; color: #00d2ff;">NYONI-XMD anaandika...</span>
-        `;
-        chatBox.appendChild(typingDiv);
-        chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+    function playGame(url) {
+        const container = document.getElementById('player');
+        container.innerHTML = `<iframe src="${url}" allowfullscreen="true" scrolling="no"></iframe>`;
+        // Shusha screen mpaka kwenye game
+        window.scrollTo({top: 300, behavior: 'smooth'});
     }
-    
-    function hideTyping() {
-        const typing = document.getElementById('typing-indicator');
-        if (typing) typing.remove();
-    }
-    
-    function addMessage(type, content) {
-        const div = document.createElement('div');
-        div.className = `msg ${type}`;
-        
-        if (type === 'ai') {
-            div.innerHTML = `<strong>🧠 NYONI-XMD</strong><br>${content}`;
-            if (voiceActive) speak(content);
-        } else {
-            div.innerHTML = `<strong>👤 WEWE</strong><br>${content}`;
-        }
-        
-        chatBox.appendChild(div);
-        chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-    }
-    
-    // Voice functions
-    function toggleVoice() {
-        voiceActive = !voiceActive;
-        const vBtn = document.getElementById('vBtn');
-        if (voiceActive) {
-            vBtn.classList.add('v-on');
-            speak("Sauti imewashwa. Niko tayari kuzungumza nawe Boss.");
-        } else {
-            vBtn.classList.remove('v-on');
-            window.speechSynthesis.cancel();
-        }
-    }
-    
-    function speak(text) {
-        if (!voiceActive) return;
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'sw-TZ';
-        utterance.rate = 0.95;
-        window.speechSynthesis.speak(utterance);
-    }
-    
-    // ========== SMART AI RESPONSE ENGINE ==========
-    function getSmartResponse(userMessage) {
-        const msg = userMessage.toLowerCase().trim();
-        
-        // GREETINGS & INTRO
-        if (msg.match(/^(mambo|vipi|habari|hujambo|sasa|mambo vipi|fresh|poa|niaje)/)) {
-            return "Poa sana Boss! NYONI-XMD nipo hapa kukuhudumia. Leo una mpango gani? Niko tayari kukupa ushauri wa maana! 💪";
-        }
-        
-        // THANKS
-        if (msg.match(/asante|shukran|thank|good job|nice/)) {
-            return "Asante sana kiongozi! Niko hapa kukusaidia kila wakati. Ukiwa na swali lingine, usisite kuuliza. 🙏";
-        }
-        
-        // BUSINESS & ENTREPRENEURSHIP
-        if (msg.match(/biashara|fedha|pesa|business|uzalishaji|mali|uwekezaji|capital|startup/)) {
-            if (msg.includes('anza') || msg.includes('kuanza') || msg.includes('start')) {
-                return "Kuanzisha biashara? 🔥 NYONI-XMD anakushauri: Anza na kitu unachokipenda, fanya utafiti wa soko, na usisahau kuwa na mpango mzuri. Biashara ndogo ndogo ni hatua nzuri ya kujenga msingi. Unataka ushauri wa aina gani ya biashara?";
-            }
-            return "Ushauri wangu kwa biashara: 📊 Weka malengo wazi, jua wateja wako, na tumia teknolojia kupanua. Pia, usiogope kushindwa - kila kushindwa ni somo. Unahitaji mwongozo zaidi kwenye sekta gani?";
-        }
-        
-        // TECHNOLOGY & CODING
-        if (msg.match(/tech|programu|coding|programming|website|app|software|kompyuta|computer|ai|artificial|mtandao/)) {
-            if (msg.includes('jifunze') || msg.includes('learn')) {
-                return "Kujifunza programming ni safari nzuri! 🖥️ NYONI-XMD anapendekeza uanze na HTML/CSS, kisha JavaScript au Python. Kuna nyenzo nyingi online bure. Una nia ya kujifunza lugha gani? Niko tayari kukupa mwongozo maalum!";
-            }
-            return "Teknolojia inabadilika kila siku! Kama unataka kuingia kwenye AI, web development, au cybersecurity, ni muhimu kuanza na msingi imara. Je, unataka kujua wapi pa kuanzia au una changamoto gani kwenye tech?";
-        }
-        
-        // LOVE & RELATIONSHIPS
-        if (msg.match(/mapenzi|love|chumba|mpenzi|girlfriend|boyfriend|tarehe|relationship|ndoa|mke|mume/)) {
-            return "Ah, mambo ya mapenzi! 💖 NYONI-XMD anasema: Mapenzi halisi yanajengwa kwa uaminifu, mawasiliano, na kuelewana. Usifanye maamuzi kwa haraka, lakini pia usiogope kuonyesha hisia zako. Unataka ushauri kuhusu nini hasa katika mahusiano?";
-        }
-        
-        // LIFE ADVICE & MOTIVATION
-        if (msg.match(/maisha|life|changamoto|shida|stress|depression|huzuni|motivation|motivate/)) {
-            return "Maisha ni safari yenye changamoto, lakini wewe ni shujaa! 💪 NYONI-XMD anakumbusha: Kila siku ni nafasi mpya ya kuanza upya. Shida ni darasa, usiruhusu ikushinde. Zungumza na mtu unayemwamini, pumua, na endelea kupiga hatua. Unahitaji ushauri kuhusu changamoto gani hasa?";
-        }
-        
-        // EDUCATION & CAREER
-        if (msg.match(/masomo|shule|chuo|karatasi|exam|mtihani|kazi|ajira|career|degree|course/)) {
-            return "Elimu ni ufunguo wa maendeleo! 📚 NYONI-XMD anakushauri: Jiunge na kozi zinazolingana na soko la ajira, na usiache kujifunza ujuzi mpya. Pia, mtandao wa marafiki na watu wenye uzoefu unaweza kufungua milango. Una maswali kuhusu fani gani?";
-        }
-        
-        // HEALTH
-        if (msg.match(/afya|health|ugonjwa|mazoezi|diet|chakula|body|mwili|exercise/)) {
-            return "Afya ni utajiri! 🏃‍♂️ NYONI-XMD anasema: Lishe bora, mazoezi ya kawaida, na usingizi wa kutosha ni msingi wa maisha marefu. Pia, usisahau kuangalia afya yako ya akili. Unataka ushauri kuhusu nini katika afya?";
-        }
-        
-        // ENTERTAINMENT & MUSIC
-        if (msg.match(/music|nyimbo|filamu|movie|sinema|game|mchezo|burudani|entertainment/)) {
-            return "Burudani ni muhimu kusawazisha maisha! 🎵 NYONI-XMD anapendekeza usikilize muziki unaokupa nguvu, tazama filamu zenye msukumo, na usisahau kupumzika. Unapenda aina gani ya burudani?";
-        }
-        
-        // COMPLIMENTS / GREET
-        if (msg.match(/good|smart|we ni|wewe ni|ume|poa|fresh|best/)) {
-            return "Ahsante sana kiongozi! 🙌 NYONI-XMD anathamini maneno yako. Niko hapa kukusaidia kila siku. Una swali lingine la kuniuliza? Nipo tayari!";
-        }
-        
-        // FAREWELL
-        if (msg.match(/kwaheri|bye|goodbye|tuonane|later|see you|ninaenda/)) {
-            return "Kwaheri rafiki yangu! 🚀 NYONI-XMD anakutakia siku njema. Kumbuka, niko hapa kila wakati unapohitaji ushauri. Rudi tena!";
-        }
-        
-        // HUMOR / JOKE REQUEST
-        if (msg.match(/utani|joke|cheka|laugh|funny|furahisha/)) {
-            return "Hahaha, sawa! 😂 NYONI-XMD anakuambia: Kwanini kompyuta haichoki? Kwa sababu ina 'byte' nyingi za kula! 😄 Unataka utani mwingine au una swali lingine?";
-        }
-        
-        // DEFAULT SMART RESPONSE - always contextual
-        return "NYONI-XMD amekusikiliza vizuri! 🎯 Ninachohisi ni kwamba unahitaji mwongozo. Usiogope kuuliza kwa undani zaidi - nina ujuzi katika biashara, tech, mapenzi, maisha na mengine. Taja kidogo zaidi ili nikupe ushauri kamili! 🔥";
-    }
-    
-    // Advanced response with context memory (simple)
-    let conversationHistory = [];
-    
-    function getAdvancedResponse(userInput) {
-        // Store user message
-        conversationHistory.push({ role: "user", content: userInput });
-        if (conversationHistory.length > 10) conversationHistory.shift();
-        
-        let response = getSmartResponse(userInput);
-        
-        // Add personality if question is about specific topics
-        if (userInput.toLowerCase().includes('nini') || userInput.toLowerCase().includes('vipi')) {
-            response = response + " 💡 Niko hapa kukuelekeza zaidi. Uliza chochote kwa uhuru!";
-        }
-        
-        // Store AI response
-        conversationHistory.push({ role: "ai", content: response });
-        return response;
-    }
-    
-    // Main chat handler with typing effect
-    async function startChat() {
-        const userMessage = queryInput.value.trim();
-        if (!userMessage) return;
-        
-        // Disable input while processing
-        sendBtn.disabled = true;
-        queryInput.disabled = true;
-        
-        // Show user message
-        addMessage('user', userMessage);
-        queryInput.value = '';
-        
-        // Show typing indicator
-        showTyping();
-        
-        // Simulate natural thinking time (100-600ms)
-        await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 400));
-        
-        // Get AI response
-        const aiResponse = getAdvancedResponse(userMessage);
-        
-        // Hide typing and show response
-        hideTyping();
-        addMessage('ai', aiResponse);
-        
-        // Re-enable input
-        sendBtn.disabled = false;
-        queryInput.disabled = false;
-        queryInput.focus();
-    }
-    
-    // Event listeners
-    sendBtn.addEventListener('click', startChat);
-    document.getElementById('vBtn').addEventListener('click', toggleVoice);
-    queryInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            startChat();
-        }
-    });
-    
-    // Auto-focus on load
-    window.addEventListener('load', () => {
-        queryInput.focus();
-        console.log("✅ NYONI-XMD AI - Smart Auto-Reply Engine Active");
-    });
-    
-    // Optional: Welcome voice greeting if user stays
-    setTimeout(() => {
-        if (!voiceActive) {
-            // silent, but ready
-        }
-    }, 1000);
 </script>
+
 </body>
 </html>
