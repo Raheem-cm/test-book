@@ -1,230 +1,228 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYONI-XMD-WAR | Official Game</title>
+    <title>NYONI-XMD-WAR | 3D World War Heroes</title>
     <style>
-        :root {
-            --tz-green: #008751;
-            --tz-yellow: #fcd116;
-            --danger: #ff0000;
-        }
-
-        body {
-            margin: 0; padding: 0;
-            background: #050505;
-            color: white;
-            font-family: 'Arial Black', sans-serif;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        #game-box {
-            position: relative;
-            width: 900px;
-            height: 500px;
-            margin: 20px auto;
-            border: 5px solid var(--tz-green);
-            background: linear-gradient(to bottom, #1a1a2e, #16213e);
-            box-shadow: 0 0 30px rgba(0, 135, 81, 0.5);
-            overflow: hidden;
-        }
-
-        canvas { display: block; }
-
-        /* UI Styling */
-        #hud {
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; }
+        #ui-layer {
             position: absolute;
-            top: 15px; left: 20px;
-            text-align: left;
+            top: 20px; left: 20px;
+            color: #fcd116; /* TZ Yellow */
+            text-shadow: 2px 2px #000;
             z-index: 10;
-            background: rgba(0,0,0,0.6);
-            padding: 10px;
-            border-radius: 8px;
-            border-left: 4px solid var(--tz-yellow);
+            pointer-events: none;
         }
-
-        .screen-msg {
+        #crosshair {
             position: absolute;
             top: 50%; left: 50%;
+            width: 20px; height: 20px;
+            border: 2px solid rgba(0, 255, 0, 0.5);
+            border-radius: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            padding: 40px;
-            border: 3px solid var(--danger);
-            display: none;
-            z-index: 100;
-            border-radius: 15px;
+            z-index: 5;
         }
-
-        .controls {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: var(--tz-yellow);
+        #blood-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 50%, rgba(255,0,0,0.5) 100%);
+            display: none;
+            pointer-events: none;
+            z-index: 6;
+        }
+        .msg-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            color: white; z-index: 100; display: none;
+        }
+        .btn {
+            background: #008751; color: white; border: 2px solid #fcd116;
+            padding: 15px 40px; font-size: 1.5rem; cursor: pointer; margin-top: 20px;
+        }
+        #weapon-hand {
+            position: absolute;
+            bottom: -20px; right: 10%;
+            width: 400px;
+            z-index: 8;
+            pointer-events: none;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <h2 style="letter-spacing: 5px;">NYONI-XMD-WAR: TANZANIA COMMANDO</h2>
-    
-    <div id="game-box">
-        <div id="hud">
-            <div style="color: var(--tz-yellow)">UNIT: NYONI-XMD</div>
-            <div>HP: <span id="hp">100</span>%</div>
-            <div>LEVEL: <span id="lvl">1</span></div>
-            <div>TARGETS: <span id="tgt">5</span></div>
-        </div>
-
-        <div id="game-over-screen" class="screen-msg">
-            <h1 style="color: var(--danger); font-size: 3rem;">MISSION FAILED</h1>
-            <p>Kamanda NYONI-XMD ameuawa vitani!</p>
-            <button onclick="location.reload()" style="background: var(--tz-green); color: white; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 5px;">RE-DEPLOY AGENT</button>
-        </div>
-
-        <canvas id="warCanvas" width="900" height="500"></canvas>
+    <div id="ui-layer">
+        <h2 style="margin:0;">KAMANDA: NYONI-XMD</h2>
+        <div>HEALTH: <span id="hp">100</span>%</div>
+        <div>LEVEL: <span id="lvl">1</span></div>
+        <div>KILLS: <span id="kills">0</span></div>
     </div>
 
-    <div class="controls">
-        ARROWS: Move | SPACE: Fire Weapons | F: Close Combat (Ngumi/Mateke) | M: Play Tanzania Anthem Bit
+    <div id="crosshair"></div>
+    <div id="blood-overlay"></div>
+
+    <img id="weapon-hand" src="https://files.catbox.moe/w7k2d1.png" alt="Gun">
+
+    <div id="start-screen" class="screen-overlay" style="display: flex; position: absolute; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:200; flex-direction:column; justify-content:center; align-items:center; color:white;">
+        <img src="https://files.catbox.moe/j7z9sv.jpeg" style="width:150px; border-radius:50%; border:5px solid #008751;">
+        <h1 style="font-size: 3.5rem; color:#fcd116;">NYONI-XMD-WAR</h1>
+        <p>BONYEZA KITUFE KUANZA MISSION TANZANIA</p>
+        <button class="btn" onclick="initGame()">DEPLOY COMMANDER</button>
+        <p style="font-size: 0.8rem; margin-top:10px;">WASD: Move | Mouse: Aim | Click: Fire</p>
     </div>
 
-<script>
-    const canvas = document.getElementById('warCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Picha ya Kamanda
-    const playerImg = new Image();
-    playerImg.src = 'https://files.catbox.moe/j7z9sv.jpeg';
+    <div id="fail-screen" class="msg-screen">
+        <h1 style="color:red; font-size:4rem;">MISSION FAILED</h1>
+        <p>Kamanda NYONI-XMD ameuawa vitani!</p>
+        <button class="btn" onclick="location.reload()">RE-DEPLOY</button>
+    </div>
 
-    // Game State
-    let running = true;
-    let level = 1;
-    let enemyCount = 5;
-    let bullets = [];
-    let enemies = [];
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    const player = {
-        x: 100, y: 350,
-        w: 60, h: 80,
-        hp: 100,
-        speed: 6,
-        isHitting: false
-    };
+    <script>
+        let scene, camera, renderer, playerHP = 100, kills = 0, level = 1;
+        let enemies = [], bullets = [];
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let isRunning = false;
 
-    function spawn() {
-        enemies = [];
-        for(let i=0; i<enemyCount; i++) {
-            enemies.push({
-                x: 600 + (Math.random() * 800),
-                y: 370,
-                w: 45, h: 60,
-                hp: 1,
-                speed: 2 + (level * 0.5)
-            });
+        function initGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            isRunning = true;
+            setup3D();
+            animate();
+            spawnEnemies();
+            
+            // Lock Mouse for FPS feel
+            document.body.requestPointerLock = document.body.requestPointerLock || document.body.mozRequestPointerLock;
+            document.body.requestPointerLock();
         }
-    }
-    spawn();
 
-    // Controls
-    const keys = {};
-    window.onkeydown = e => {
-        keys[e.code] = true;
-        if(e.code === 'Space') bullets.push({x: player.x + 60, y: player.y + 35});
-        if(e.code === 'KeyF') {
-            player.isHitting = true;
-            setTimeout(() => player.isHitting = false, 150);
+        function setup3D() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb); // Sky Blue
+            scene.fog = new THREE.Fog(0x87ceeb, 10, 50);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Ground (Tanzania Soil/Grass)
+            const groundGeo = new THREE.PlaneGeometry(200, 200);
+            const groundMat = new THREE.MeshPhongMaterial({ color: 0x228B22 }); // Forest Green
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
+
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 10, 7.5);
+            scene.add(new THREE.AmbientLight(0x404040));
+            scene.add(light);
+
+            camera.position.y = 1.6; // Human height
         }
-    };
-    window.onkeyup = e => keys[e.code] = false;
 
-    function update() {
-        if(!running) return;
+        function spawnEnemies() {
+            for(let i=0; i < 5 + level; i++) {
+                const geo = new THREE.BoxGeometry(0.8, 1.8, 0.8);
+                const mat = new THREE.MeshPhongMaterial({ color: 0x442200 }); // Enemy color
+                const enemy = new THREE.Mesh(geo, mat);
+                enemy.position.set(Math.random()*40-20, 0.9, Math.random()*40-20);
+                scene.add(enemy);
+                enemies.push(enemy);
+            }
+        }
 
-        if(keys['ArrowRight'] && player.x < 800) player.x += player.speed;
-        if(keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
-
-        // Bullets update
-        bullets.forEach((b, i) => {
-            b.x += 12;
-            if(b.x > 900) bullets.splice(i, 1);
+        // Controls
+        document.addEventListener('keydown', (e) => {
+            if(e.code === 'KeyW') moveForward = true;
+            if(e.code === 'KeyS') moveBackward = true;
+            if(e.code === 'KeyA') moveLeft = true;
+            if(e.code === 'KeyD') moveRight = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if(e.code === 'KeyW') moveForward = false;
+            if(e.code === 'KeyS') moveBackward = false;
+            if(e.code === 'KeyA') moveLeft = false;
+            if(e.code === 'KeyD') moveRight = false;
         });
 
-        // Enemies update
-        enemies.forEach((en, ei) => {
-            if(en.x > player.x + 30) en.x -= en.speed;
-            else player.hp -= 0.3; // Damage player if touching
+        document.addEventListener('mousemove', (e) => {
+            if(!isRunning) return;
+            camera.rotation.y -= e.movementX * 0.002;
+        });
 
-            // Bullet hit
-            bullets.forEach((b, bi) => {
-                if(b.x > en.x && b.x < en.x + en.w && b.y > en.y && b.y < en.y + en.h) {
-                    enemies.splice(ei, 1);
-                    bullets.splice(bi, 1);
+        document.addEventListener('mousedown', () => {
+            if(!isRunning) return;
+            fire();
+        });
+
+        function fire() {
+            // Animating gun kickback
+            const gun = document.getElementById('weapon-hand');
+            gun.style.transform = 'translateY(-20px) scale(1.1)';
+            setTimeout(() => gun.style.transform = 'translateY(0) scale(1)', 50);
+
+            // Raycasting for 3D shooting
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+            const intersects = raycaster.intersectObjects(enemies);
+
+            if (intersects.length > 0) {
+                const hitEnemy = intersects[0].object;
+                scene.remove(hitEnemy);
+                enemies = enemies.filter(e => e !== hitEnemy);
+                kills++;
+                document.getElementById('kills').innerText = kills;
+                if(enemies.length === 0) {
+                    level++;
+                    document.getElementById('lvl').innerText = level;
+                    spawnEnemies();
+                }
+            }
+        }
+
+        function animate() {
+            if(!isRunning) return;
+            requestAnimationFrame(animate);
+
+            // Movement Logic
+            const speed = 0.1;
+            if(moveForward) camera.translateZ(-speed);
+            if(moveBackward) camera.translateZ(speed);
+            if(moveLeft) camera.translateX(-speed);
+            if(moveRight) camera.translateX(speed);
+            camera.position.y = 1.6; // Keep height steady
+
+            // Enemies follow player
+            enemies.forEach(en => {
+                en.lookAt(camera.position);
+                en.translateZ(0.03 + (level*0.01));
+                
+                // Damage player if too close
+                if(en.position.distanceTo(camera.position) < 1.5) {
+                    playerHP -= 0.5;
+                    document.getElementById('blood-overlay').style.display = 'block';
+                    setTimeout(() => document.getElementById('blood-overlay').style.display = 'none', 100);
                 }
             });
 
-            // Melee hit
-            if(player.isHitting && player.x + player.w + 20 > en.x && player.x < en.x + en.w) {
-                enemies.splice(ei, 1);
+            document.getElementById('hp').innerText = Math.max(0, Math.floor(playerHP));
+
+            if(playerHP <= 0) {
+                isRunning = false;
+                document.getElementById('fail-screen').style.display = 'flex';
+                document.exitPointerLock();
             }
-        });
 
-        // Level Up
-        if(enemies.length === 0) {
-            level++;
-            enemyCount += 2;
-            player.hp = Math.min(100, player.hp + 20);
-            spawn();
+            renderer.render(scene, camera);
         }
-
-        // Death
-        if(player.hp <= 0) {
-            running = false;
-            document.getElementById('game-over-screen').style.display = 'block';
-        }
-
-        document.getElementById('hp').innerText = Math.floor(player.hp);
-        document.getElementById('lvl').innerText = level;
-        document.getElementById('tgt').innerText = enemies.length;
-    }
-
-    function draw() {
-        ctx.clearRect(0, 0, 900, 500);
-
-        // Ground
-        ctx.fillStyle = '#222';
-        ctx.fillRect(0, 430, 900, 70);
-
-        // Draw Commander (Using your Image)
-        ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
-        
-        // Melee Effect
-        if(player.isHitting) {
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(player.x + player.w, player.y + 20, 30, 30);
-        }
-
-        // Draw Bullets
-        ctx.fillStyle = '#ffcc00';
-        bullets.forEach(b => ctx.beginPath() || ctx.arc(b.x, b.y, 4, 0, Math.PI*2) || ctx.fill());
-
-        // Draw Enemies (Rebels)
-        ctx.fillStyle = '#4a0000';
-        enemies.forEach(en => {
-            ctx.fillRect(en.x, en.y, en.w, en.h);
-            ctx.fillStyle = 'red';
-            ctx.fillRect(en.x + 5, en.y + 10, 10, 5); // Eyes
-            ctx.fillStyle = '#4a0000';
-        });
-    }
-
-    function loop() {
-        update();
-        draw();
-        requestAnimationFrame(loop);
-    }
-    loop();
-</script>
+    </script>
 </body>
 </html>
