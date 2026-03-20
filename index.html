@@ -2,148 +2,115 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NYONI-XMD-WAR</title>
 <style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: url('https://files.catbox.moe/j7z9sv.jpeg') no-repeat center center;
-    background-size: cover;
-  }
-  canvas {
-    display: block;
-    margin: 0 auto;
-    background: rgba(0,0,0,0.2);
-  }
+body { margin: 0; overflow: hidden; background: black; }
+#info {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: lime;
+  font-family: monospace;
+}
 </style>
 </head>
 <body>
-<audio id="tanzaniaAnthem" src="https://upload.wikimedia.org/wikipedia/commons/2/27/Tanzania_national_anthem.ogg" autoplay loop></audio>
-<canvas id="gameCanvas"></canvas>
+
+<div id="info">NYONI-XMD-WAR | Protect Tanzania 🇹🇿</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+// Scene
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x222222);
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// Camera
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 
-// Player setup
-const player = {
-  x: canvas.width/2,
-  y: canvas.height - 150,
-  width: 50,
-  height: 50,
-  color: 'green',
-  health: 100,
-  speed: 5,
-  bullets: []
-};
+// Renderer
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-// Enemy setup
-let enemies = [];
-let level = 1;
-let score = 0;
+// Light
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5,10,7);
+scene.add(light);
 
-function createEnemy() {
-  const enemy = {
-    x: Math.random() * (canvas.width - 50),
-    y: -50,
-    width: 50,
-    height: 50,
-    color: 'red',
-    health: 50
-  };
-  enemies.push(enemy);
+// Ground (Tanzania battlefield)
+const groundGeo = new THREE.PlaneGeometry(200,200);
+const groundMat = new THREE.MeshStandardMaterial({color: 0x556b2f});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+// Player gun
+const gunGeo = new THREE.BoxGeometry(0.2,0.2,1);
+const gunMat = new THREE.MeshStandardMaterial({color: 0x333333});
+const gun = new THREE.Mesh(gunGeo, gunMat);
+gun.position.set(0,-0.3,-1);
+camera.add(gun);
+scene.add(camera);
+
+// Enemy
+const enemyGeo = new THREE.BoxGeometry(1,2,1);
+const enemyMat = new THREE.MeshStandardMaterial({color: "red"});
+const enemy = new THREE.Mesh(enemyGeo, enemyMat);
+enemy.position.set(0,1,-10);
+scene.add(enemy);
+
+// Simple building (NYONI-XMD CAMP)
+const campGeo = new THREE.BoxGeometry(5,3,5);
+const campMat = new THREE.MeshStandardMaterial({color: 0x4444ff});
+const camp = new THREE.Mesh(campGeo, campMat);
+camp.position.set(10,1.5,-20);
+scene.add(camp);
+
+// Movement
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+
+document.addEventListener("keydown", (e)=>{
+  if(e.key=="w") moveForward=true;
+  if(e.key=="s") moveBackward=true;
+  if(e.key=="a") moveLeft=true;
+  if(e.key=="d") moveRight=true;
+});
+
+document.addEventListener("keyup", (e)=>{
+  if(e.key=="w") moveForward=false;
+  if(e.key=="s") moveBackward=false;
+  if(e.key=="a") moveLeft=false;
+  if(e.key=="d") moveRight=false;
+});
+
+// Shooting
+document.addEventListener("click", ()=>{
+  if(camera.position.distanceTo(enemy.position) < 5){
+    alert("Enemy eliminated!");
+    enemy.position.set(Math.random()*20-10,1,-20);
+  }
+});
+
+// Camera start
+camera.position.y = 1.6;
+
+// Animation loop
+function animate(){
+  requestAnimationFrame(animate);
+
+  if(moveForward) camera.position.z -= 0.1;
+  if(moveBackward) camera.position.z += 0.1;
+  if(moveLeft) camera.position.x -= 0.1;
+  if(moveRight) camera.position.x += 0.1;
+
+  renderer.render(scene, camera);
 }
-
-// Controls
-const keys = {};
-window.addEventListener('keydown', e => keys[e.key] = true);
-window.addEventListener('keyup', e => keys[e.key] = false);
-
-// Shoot bullet
-function shoot() {
-  player.bullets.push({x: player.x + player.width/2 - 5, y: player.y, width: 10, height: 20, color:'yellow', speed:10});
-}
-
-// Game loop
-function update() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // Player movement
-  if(keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
-  if(keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
-  if(keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
-  if(keys['ArrowDown'] && player.y + player.height < canvas.height) player.y += player.speed;
-  if(keys[' ']) shoot();
-
-  // Draw player
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-
-  // Update bullets
-  player.bullets.forEach((b, i) => {
-    b.y -= b.speed;
-    ctx.fillStyle = b.color;
-    ctx.fillRect(b.x, b.y, b.width, b.height);
-
-    // Collision with enemies
-    enemies.forEach((enemy, j) => {
-      if(b.x < enemy.x + enemy.width &&
-         b.x + b.width > enemy.x &&
-         b.y < enemy.y + enemy.height &&
-         b.y + b.height > enemy.y) {
-           enemy.health -= 25;
-           player.bullets.splice(i,1);
-           if(enemy.health <= 0){
-             enemies.splice(j,1);
-             score += 10;
-           }
-      }
-    });
-  });
-
-  // Update enemies
-  enemies.forEach((enemy, i) => {
-    enemy.y += 2 + level * 0.5;
-    ctx.fillStyle = enemy.color;
-    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-
-    // Enemy hits player
-    if(enemy.x < player.x + player.width &&
-       enemy.x + enemy.width > player.x &&
-       enemy.y < player.y + player.height &&
-       enemy.y + enemy.height > player.y) {
-         // Reset game
-         alert('NYONI-XMD amepoteza! Restarting...');
-         enemies = [];
-         player.health = 100;
-         level = 1;
-         score = 0;
-    }
-
-    // Remove if offscreen
-    if(enemy.y > canvas.height) enemies.splice(i,1);
-  });
-
-  // Draw UI
-  ctx.fillStyle = 'white';
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, 20, 30);
-  ctx.fillText('Score: ' + score, 20, 60);
-
-  requestAnimationFrame(update);
-}
-
-// Spawn enemies every few seconds
-setInterval(() => {
-  for(let i=0; i<level; i++) createEnemy();
-  level++;
-}, 5000);
-
-update();
+animate();
 </script>
+
 </body>
 </html>
