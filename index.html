@@ -3,149 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYONI-XMD-AI | PRO CONSOLE V2</title>
+    <title>NYONI-XMD-WAR | Official Game</title>
     <style>
         :root {
-            --ps-blue: #0072ff;
-            --ps-dark: #020205;
-            --accent: #00d4ff;
+            --tz-green: #008751;
+            --tz-yellow: #fcd116;
+            --danger: #ff0000;
         }
 
-        body, html {
+        body {
             margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background: var(--ps-dark);
-            font-family: 'Segoe UI', sans-serif;
-            color: white; overflow-x: hidden;
-        }
-
-        header {
-            height: 70px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 30px;
-            background: rgba(0,0,0,0.9);
-            border-bottom: 2px solid var(--ps-blue);
-        }
-
-        .container {
-            padding: 40px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
-        }
-
-        .game-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .game-card:hover {
-            transform: scale(1.05);
-            border-color: var(--ps-blue);
-            background: rgba(0, 114, 255, 0.2);
-        }
-
-        /* The Fullscreen Fix */
-        #game-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: #000;
-            z-index: 9999;
-        }
-
-        #game-frame {
-            width: 100%; height: 100%;
-            border: none;
-        }
-
-        .controls {
-            position: absolute;
-            top: 10px; right: 20px;
-            z-index: 10000;
-        }
-
-        .btn-exit {
-            background: red;
+            background: #050505;
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(255,0,0,0.5);
+            font-family: 'Arial Black', sans-serif;
+            overflow: hidden;
+            text-align: center;
         }
 
-        .loader {
+        #game-box {
+            position: relative;
+            width: 900px;
+            height: 500px;
+            margin: 20px auto;
+            border: 5px solid var(--tz-green);
+            background: linear-gradient(to bottom, #1a1a2e, #16213e);
+            box-shadow: 0 0 30px rgba(0, 135, 81, 0.5);
+            overflow: hidden;
+        }
+
+        canvas { display: block; }
+
+        /* UI Styling */
+        #hud {
+            position: absolute;
+            top: 15px; left: 20px;
+            text-align: left;
+            z-index: 10;
+            background: rgba(0,0,0,0.6);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid var(--tz-yellow);
+        }
+
+        .screen-msg {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            color: var(--ps-blue);
-            font-weight: bold;
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border: 3px solid var(--danger);
+            display: none;
+            z-index: 100;
+            border-radius: 15px;
+        }
+
+        .controls {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--tz-yellow);
         }
     </style>
 </head>
 <body>
 
-<header>
-    <div style="font-weight:900; letter-spacing:2px;">NYONI-XMD-AI <span style="color:var(--ps-blue)">PRO</span></div>
-</header>
+    <h2 style="letter-spacing: 5px;">NYONI-XMD-WAR: TANZANIA COMMANDO</h2>
+    
+    <div id="game-box">
+        <div id="hud">
+            <div style="color: var(--tz-yellow)">UNIT: NYONI-XMD</div>
+            <div>HP: <span id="hp">100</span>%</div>
+            <div>LEVEL: <span id="lvl">1</span></div>
+            <div>TARGETS: <span id="tgt">5</span></div>
+        </div>
 
-<div class="container">
-    <div class="game-card" onclick="launch('https://www.retrogames.cc/embed/42601-naruto-shippuden-ultimate-ninja-5.html')">
-        <h3>Naruto 5</h3>
-    </div>
-    <div class="game-card" onclick="launch('https://www.retrogames.cc/embed/41635-grand-theft-auto-san-andreas.html')">
-        <h3>GTA SA</h3>
-    </div>
-    <div class="game-card" onclick="launch('https://www.retrogames.cc/embed/41551-god-of-war-ii.html')">
-        <h3>God of War II</h3>
-    </div>
-    <div class="game-card" onclick="launch('https://www.retrogames.cc/embed/41724-mortal-kombat-armageddon.html')">
-        <h3>Mortal Kombat</h3>
-    </div>
-</div>
+        <div id="game-over-screen" class="screen-msg">
+            <h1 style="color: var(--danger); font-size: 3rem;">MISSION FAILED</h1>
+            <p>Kamanda NYONI-XMD ameuawa vitani!</p>
+            <button onclick="location.reload()" style="background: var(--tz-green); color: white; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 5px;">RE-DEPLOY AGENT</button>
+        </div>
 
-<div id="game-overlay">
+        <canvas id="warCanvas" width="900" height="500"></canvas>
+    </div>
+
     <div class="controls">
-        <button class="btn-exit" onclick="closeGame()">EXIT GAME [X]</button>
+        ARROWS: Move | SPACE: Fire Weapons | F: Close Combat (Ngumi/Mateke) | M: Play Tanzania Anthem Bit
     </div>
-    <div id="loader" class="loader">CONNECTING TO CLOUD SERVER...</div>
-    <iframe id="game-frame" src="" allowfullscreen="true"></iframe>
-</div>
 
 <script>
-    function launch(url) {
-        const overlay = document.getElementById('game-overlay');
-        const frame = document.getElementById('game-frame');
-        const loader = document.getElementById('loader');
+    const canvas = document.getElementById('warCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Picha ya Kamanda
+    const playerImg = new Image();
+    playerImg.src = 'https://files.catbox.moe/j7z9sv.jpeg';
 
-        overlay.style.display = 'block';
-        loader.style.display = 'block';
+    // Game State
+    let running = true;
+    let level = 1;
+    let enemyCount = 5;
+    let bullets = [];
+    let enemies = [];
+
+    const player = {
+        x: 100, y: 350,
+        w: 60, h: 80,
+        hp: 100,
+        speed: 6,
+        isHitting: false
+    };
+
+    function spawn() {
+        enemies = [];
+        for(let i=0; i<enemyCount; i++) {
+            enemies.push({
+                x: 600 + (Math.random() * 800),
+                y: 370,
+                w: 45, h: 60,
+                hp: 1,
+                speed: 2 + (level * 0.5)
+            });
+        }
+    }
+    spawn();
+
+    // Controls
+    const keys = {};
+    window.onkeydown = e => {
+        keys[e.code] = true;
+        if(e.code === 'Space') bullets.push({x: player.x + 60, y: player.y + 35});
+        if(e.code === 'KeyF') {
+            player.isHitting = true;
+            setTimeout(() => player.isHitting = false, 150);
+        }
+    };
+    window.onkeyup = e => keys[e.code] = false;
+
+    function update() {
+        if(!running) return;
+
+        if(keys['ArrowRight'] && player.x < 800) player.x += player.speed;
+        if(keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+
+        // Bullets update
+        bullets.forEach((b, i) => {
+            b.x += 12;
+            if(b.x > 900) bullets.splice(i, 1);
+        });
+
+        // Enemies update
+        enemies.forEach((en, ei) => {
+            if(en.x > player.x + 30) en.x -= en.speed;
+            else player.hp -= 0.3; // Damage player if touching
+
+            // Bullet hit
+            bullets.forEach((b, bi) => {
+                if(b.x > en.x && b.x < en.x + en.w && b.y > en.y && b.y < en.y + en.h) {
+                    enemies.splice(ei, 1);
+                    bullets.splice(bi, 1);
+                }
+            });
+
+            // Melee hit
+            if(player.isHitting && player.x + player.w + 20 > en.x && player.x < en.x + en.w) {
+                enemies.splice(ei, 1);
+            }
+        });
+
+        // Level Up
+        if(enemies.length === 0) {
+            level++;
+            enemyCount += 2;
+            player.hp = Math.min(100, player.hp + 20);
+            spawn();
+        }
+
+        // Death
+        if(player.hp <= 0) {
+            running = false;
+            document.getElementById('game-over-screen').style.display = 'block';
+        }
+
+        document.getElementById('hp').innerText = Math.floor(player.hp);
+        document.getElementById('lvl').innerText = level;
+        document.getElementById('tgt').innerText = enemies.length;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, 900, 500);
+
+        // Ground
+        ctx.fillStyle = '#222';
+        ctx.fillRect(0, 430, 900, 70);
+
+        // Draw Commander (Using your Image)
+        ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
         
-        // This helps force the load
-        frame.src = url;
+        // Melee Effect
+        if(player.isHitting) {
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(player.x + player.w, player.y + 20, 30, 30);
+        }
 
-        frame.onload = function() {
-            loader.style.display = 'none';
-        };
+        // Draw Bullets
+        ctx.fillStyle = '#ffcc00';
+        bullets.forEach(b => ctx.beginPath() || ctx.arc(b.x, b.y, 4, 0, Math.PI*2) || ctx.fill());
+
+        // Draw Enemies (Rebels)
+        ctx.fillStyle = '#4a0000';
+        enemies.forEach(en => {
+            ctx.fillRect(en.x, en.y, en.w, en.h);
+            ctx.fillStyle = 'red';
+            ctx.fillRect(en.x + 5, en.y + 10, 10, 5); // Eyes
+            ctx.fillStyle = '#4a0000';
+        });
     }
 
-    function closeGame() {
-        const overlay = document.getElementById('game-overlay');
-        const frame = document.getElementById('game-frame');
-        overlay.style.display = 'none';
-        frame.src = ""; // Stop the game completely
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
     }
+    loop();
 </script>
-
 </body>
 </html>
