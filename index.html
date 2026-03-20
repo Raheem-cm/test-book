@@ -1,116 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>NYONI-XMD-WAR</title>
-<style>
-body { margin: 0; overflow: hidden; background: black; }
-#info {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  color: lime;
-  font-family: monospace;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>NYONI-XMD-WAR | Tanzania Defense Force</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        canvas { display: block; cursor: crosshair; background: #3b4d21; /* Terrain Green */ }
+        
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: #ffd700; text-align: center;
+        }
+
+        #ui-panel {
+            position: absolute; top: 10px; left: 10px; color: #fff;
+            background: rgba(0,0,0,0.6); padding: 15px; border-left: 5px solid #1e592f;
+            pointer-events: none; border-radius: 5px;
+        }
+
+        .btn-start {
+            padding: 20px 50px; font-size: 24px; background: #1e592f; color: gold;
+            border: 3px solid gold; cursor: pointer; font-weight: bold; text-transform: uppercase;
+        }
+
+        .status-bar { color: #00ff00; font-weight: bold; margin-bottom: 5px; }
+    </style>
 </head>
 <body>
 
-<div id="info">NYONI-XMD-WAR | Protect Tanzania 🇹🇿</div>
+<div id="ui-panel">
+    <div class="status-bar">UNIT: JWTZ SPECIAL FORCES</div>
+    <div class="status-bar">MISSION: PROTECT NYONI-XMD-CAMP</div>
+    <hr>
+    <div>HEALTH: <span id="hp">100%</span></div>
+    <div>AMMO: <span id="ammo">30/30</span></div>
+    <div>ENEMIES NEUTRALIZED: <span id="score">0</span></div>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<div id="overlay">
+    <h1 style="font-size: 60px; margin-bottom: 10px;">NYONI-XMD-WAR</h1>
+    <h3 style="color: white; margin-bottom: 30px;">Tanzania Homeland Defense Mission</h3>
+    <button class="btn-start" onclick="initGame()">DEPLOY TO BATTLE</button>
+    <p style="color: #ccc; margin-top: 20px;">Use WASD to Move | Mouse to Aim & Shoot</p>
+</div>
+
+<canvas id="warCanvas"></canvas>
 
 <script>
-// Scene
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x222222);
+    const canvas = document.getElementById('warCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-// Camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    let gameActive = false;
+    let score = 0;
+    let playerHp = 100;
+    let ammo = 30;
 
-// Renderer
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+    const keys = {};
+    const bullets = [];
+    const enemies = [];
+    
+    // JWTZ Soldier Object
+    const soldier = {
+        x: canvas.width / 2,
+        y: canvas.height - 150,
+        r: 15,
+        speed: 4,
+        angle: 0
+    };
 
-// Light
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5,10,7);
-scene.add(light);
+    // Movement Listeners
+    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keyup', e => keys[e.code] = false);
+    window.addEventListener('mousedown', shoot);
+    window.addEventListener('mousemove', e => {
+        soldier.angle = Math.atan2(e.clientY - soldier.y, e.clientX - soldier.x);
+    });
 
-// Ground (Tanzania battlefield)
-const groundGeo = new THREE.PlaneGeometry(200,200);
-const groundMat = new THREE.MeshStandardMaterial({color: 0x556b2f});
-const ground = new THREE.Mesh(groundGeo, groundMat);
-ground.rotation.x = -Math.PI/2;
-scene.add(ground);
+    function initGame() {
+        document.getElementById('overlay').style.display = 'none';
+        gameActive = true;
+        spawnEnemy();
+        draw();
+    }
 
-// Player gun
-const gunGeo = new THREE.BoxGeometry(0.2,0.2,1);
-const gunMat = new THREE.MeshStandardMaterial({color: 0x333333});
-const gun = new THREE.Mesh(gunGeo, gunMat);
-gun.position.set(0,-0.3,-1);
-camera.add(gun);
-scene.add(camera);
+    function shoot() {
+        if (ammo > 0 && gameActive) {
+            bullets.push({
+                x: soldier.x + Math.cos(soldier.angle) * 20,
+                y: soldier.y + Math.sin(soldier.angle) * 20,
+                vx: Math.cos(soldier.angle) * 10,
+                vy: Math.sin(soldier.angle) * 10
+            });
+            ammo--;
+            updateUI();
+        }
+    }
 
-// Enemy
-const enemyGeo = new THREE.BoxGeometry(1,2,1);
-const enemyMat = new THREE.MeshStandardMaterial({color: "red"});
-const enemy = new THREE.Mesh(enemyGeo, enemyMat);
-enemy.position.set(0,1,-10);
-scene.add(enemy);
+    function spawnEnemy() {
+        if(gameActive) {
+            enemies.push({
+                x: Math.random() * canvas.width,
+                y: -30,
+                speed: 1.5 + (score * 0.1)
+            });
+            setTimeout(spawnEnemy, 1500);
+        }
+    }
 
-// Simple building (NYONI-XMD CAMP)
-const campGeo = new THREE.BoxGeometry(5,3,5);
-const campMat = new THREE.MeshStandardMaterial({color: 0x4444ff});
-const camp = new THREE.Mesh(campGeo, campMat);
-camp.position.set(10,1.5,-20);
-scene.add(camp);
+    function updateUI() {
+        document.getElementById('hp').innerText = playerHp + "%";
+        document.getElementById('ammo').innerText = ammo + "/30";
+        document.getElementById('score').innerText = score;
+    }
 
-// Movement
-let moveForward = false;
-let moveBackward = false;
-let moveLeft = false;
-let moveRight = false;
+    // Drawing Functions
+    function drawCamp() {
+        // Main Base (NYONI-XMD-CAMP)
+        ctx.fillStyle = "#444";
+        ctx.fillRect(canvas.width/2 - 150, 20, 300, 100);
+        ctx.strokeStyle = "gold";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(canvas.width/2 - 150, 20, 300, 100);
+        
+        ctx.fillStyle = "white";
+        ctx.font = "bold 20px Arial";
+        ctx.fillText("NYONI-XMD-CAMP", canvas.width/2 - 90, 80);
 
-document.addEventListener("keydown", (e)=>{
-  if(e.key=="w") moveForward=true;
-  if(e.key=="s") moveBackward=true;
-  if(e.key=="a") moveLeft=true;
-  if(e.key=="d") moveRight=true;
-});
+        // TZ Flag
+        ctx.fillStyle = "#1e592f"; ctx.fillRect(canvas.width/2 + 100, 40, 30, 20); // Green
+    }
 
-document.addEventListener("keyup", (e)=>{
-  if(e.key=="w") moveForward=false;
-  if(e.key=="s") moveBackward=false;
-  if(e.key=="a") moveLeft=false;
-  if(e.key=="d") moveRight=false;
-});
+    function drawVehicles() {
+        // JWTZ Patrol Truck (Static Decoration)
+        ctx.fillStyle = "#2d3e1a"; 
+        ctx.fillRect(100, 300, 80, 40); // Body
+        ctx.fillStyle = "black"; ctx.fillRect(105, 335, 15, 10); ctx.fillRect(150, 335, 15, 10); // Wheels
+        ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.fillText("JWTZ-01", 110, 325);
 
-// Shooting
-document.addEventListener("click", ()=>{
-  if(camera.position.distanceTo(enemy.position) < 5){
-    alert("Enemy eliminated!");
-    enemy.position.set(Math.random()*20-10,1,-20);
-  }
-});
+        // Motorcycle (Pikipiki ya Jeshi)
+        ctx.strokeStyle = "black"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(canvas.width - 150, 400); ctx.lineTo(canvas.width - 100, 400); ctx.stroke();
+        ctx.fillStyle = "#2d3e1a"; ctx.fillRect(canvas.width - 135, 390, 25, 10);
+    }
 
-// Camera start
-camera.position.y = 1.6;
+    function draw() {
+        if(!gameActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// Animation loop
-function animate(){
-  requestAnimationFrame(animate);
+        // Ground Details
+        drawCamp();
+        drawVehicles();
 
-  if(moveForward) camera.position.z -= 0.1;
-  if(moveBackward) camera.position.z += 0.1;
-  if(moveLeft) camera.position.x -= 0.1;
-  if(moveRight) camera.position.x += 0.1;
+        // Update & Draw Soldier (JWTZ Uniform Colors)
+        if (keys['KeyW']) soldier.y -= soldier.speed;
+        if (keys['KeyS']) soldier.y += soldier.speed;
+        if (keys['KeyA']) soldier.x -= soldier.speed;
+        if (keys['KeyD']) soldier.x += soldier.speed;
 
-  renderer.render(scene, camera);
-}
-animate();
+        ctx.save();
+        ctx.translate(soldier.x, soldier.y);
+        ctx.rotate(soldier.angle);
+        // Uniform (Green/Camo)
+        ctx.fillStyle = "#354a21"; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
+        // Weapon (Gun)
+        ctx.fillStyle = "black"; ctx.fillRect(10, -4, 25, 8);
+        ctx.restore();
+
+        // Bullets
+        bullets.forEach((b, i) => {
+            b.x += b.vx; b.y += b.vy;
+            ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
+            if(b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(i, 1);
+        });
+
+        // Enemies (Invaders)
+        enemies.forEach((en, i) => {
+            en.y += en.speed;
+            ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(en.x, en.y, 15, 0, Math.PI*2); ctx.fill();
+            
+            // Bullet Collision
+            bullets.forEach((b, bi) => {
+                let dist = Math.hypot(en.x - b.x, en.y - b.y);
+                if(dist < 20) {
+                    enemies.splice(i, 1);
+                    bullets.splice(bi, 1);
+                    score += 10;
+                    updateUI();
+                }
+            });
+
+            // Camp Attack Detection
+            if(en.y > 100 && en.y < 120 && en.x > canvas.width/2 - 150 && en.x < canvas.width/2 + 150) {
+                gameActive = false;
+                alert("GAME OVER! NYONI-XMD-CAMP HAS FALLEN. Final Score: " + score);
+                location.reload();
+            }
+        });
+
+        requestAnimationFrame(draw);
+    }
 </script>
-
 </body>
 </html>
