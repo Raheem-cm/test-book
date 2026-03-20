@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYONI-XMD-AI | Pro Gaming Station</title>
+    <title>NYONI-XMD-AI | PRO CONSOLE</title>
     <style>
         :root {
-            --ps-blue: #003791;
-            --ps-glow: #0072ff;
-            --glass: rgba(255, 255, 255, 0.1);
+            --ps-blue: #0072ff;
+            --ps-dark: #020205;
+            --neon-glow: #00d4ff;
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
         body, html {
@@ -16,110 +17,122 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background: #000;
+            background: var(--ps-dark);
             font-family: 'Segoe UI', sans-serif;
             color: white;
-            overflow: hidden; /* Lock scroll for console feel */
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at center, #0a0a2e 0%, #020205 100%);
         }
 
-        /* High-End Dynamic Background */
-        .bg-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-            filter: brightness(0.4) contrast(1.2);
-        }
-
-        /* Top Navigation Bar */
-        nav {
-            height: 60px;
+        /* High-End Header */
+        header {
+            height: 80px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            padding: 0 50px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            position: fixed;
+            padding: 0 40px;
+            background: rgba(0,0,0,0.8);
+            border-bottom: 2px solid var(--ps-blue);
+            position: sticky;
             top: 0;
-            width: 100%;
-            z-index: 10;
+            z-index: 100;
         }
 
-        .logo {
-            font-weight: bold;
-            font-size: 24px;
-            letter-spacing: 3px;
-            color: #fff;
-            text-transform: uppercase;
-        }
-
-        /* Main Game Deck */
-        .main-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding-left: 80px;
-        }
-
-        .category-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            text-transform: uppercase;
+        .brand {
+            font-size: 1.8rem;
+            font-weight: 900;
             letter-spacing: 2px;
-            border-left: 4px solid var(--ps-glow);
-            padding-left: 15px;
+            text-shadow: 0 0 10px var(--ps-blue);
         }
 
-        .game-grid {
+        .user-status {
+            color: var(--neon-glow);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            border: 1px solid var(--neon-glow);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* Hero Section with your Image */
+        .hero {
+            position: relative;
+            width: 95%;
+            height: 250px;
+            margin: 20px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: url('https://files.catbox.moe/e2xq6c.jpeg') center/cover;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 40px;
+            background: linear-gradient(to top, rgba(0,0,0,1), transparent);
+        }
+
+        /* PSP/PS5 Styled Horizontal List */
+        .game-section {
+            padding: 20px 40px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #ccc;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .game-scroller {
             display: flex;
-            gap: 20px;
+            gap: 25px;
             overflow-x: auto;
-            padding: 20px 0;
-            scrollbar-width: none; /* Hide scrollbar */
+            padding-bottom: 30px;
+            scrollbar-width: none;
         }
 
         .game-card {
-            min-width: 280px;
-            height: 160px;
+            min-width: 200px;
+            height: 280px;
             background: var(--glass);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 20px;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.4s ease;
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 15px;
+            backdrop-filter: blur(10px);
         }
 
         .game-card:hover {
-            transform: scale(1.1);
-            border-color: var(--ps-glow);
-            box-shadow: 0 0 30px rgba(0, 114, 255, 0.5);
-            background: rgba(255,255,255,0.2);
+            transform: translateY(-10px);
+            border-color: var(--ps-blue);
+            box-shadow: 0 0 25px rgba(0, 114, 255, 0.4);
+        }
+
+        .game-card .category {
+            font-size: 0.7rem;
+            color: var(--neon-glow);
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
         .game-card h3 {
             margin: 0;
-            font-size: 1.2rem;
-            z-index: 2;
+            font-size: 1.1rem;
+            font-weight: 600;
         }
 
-        .game-card span {
-            font-size: 0.8rem;
-            color: var(--ps-glow);
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        /* Full Screen Overlay */
-        #console-screen {
+        /* Professional Fullscreen Player */
+        #main-stage {
             display: none;
             position: fixed;
             top: 0;
@@ -127,7 +140,7 @@
             width: 100vw;
             height: 100vh;
             background: #000;
-            z-index: 9999;
+            z-index: 1000;
         }
 
         iframe {
@@ -136,104 +149,114 @@
             border: none;
         }
 
-        .exit-btn {
+        .close-system {
             position: absolute;
             top: 20px;
             right: 40px;
-            background: rgba(255, 0, 0, 0.7);
+            background: red;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 50px;
-            cursor: pointer;
+            padding: 12px 25px;
+            border-radius: 8px;
             font-weight: bold;
-            z-index: 10000;
-            transition: 0.3s;
+            cursor: pointer;
+            z-index: 1100;
+            box-shadow: 0 0 15px rgba(255,0,0,0.5);
         }
 
-        .exit-btn:hover { background: red; }
-
-        /* Custom Header using your provided image */
-        .hero-banner {
-            position: absolute;
-            top: 60px;
-            right: 50px;
-            width: 400px;
-            height: 200px;
-            background: url('https://files.catbox.moe/e2xq6c.jpeg') center/cover;
-            border-radius: 20px;
-            border: 2px solid var(--ps-glow);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        /* Business WhatsApp Button */
+        .buy-now {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #25d366;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 99;
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-video" style="background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);"></div>
+<header>
+    <div class="brand">NYONI-XMD-AI <span style="color:var(--ps-blue)">PRO</span></div>
+    <div class="user-status">System: Online</div>
+</header>
 
-    <nav>
-        <div class="logo">NYONI-XMD-AI <span style="color:var(--ps-glow)">PRO</span></div>
-    </nav>
+<div class="hero">
+    <div class="hero-overlay">
+        <h2>Next-Gen Cloud Gaming</h2>
+        <p>Premium Access to PSP, PS4 & PS5 Library</p>
+    </div>
+</div>
 
-    <div class="hero-banner"></div>
-
-    <div class="main-container">
-        <div class="category-title">PlayStation Collection</div>
+<div class="game-section">
+    <div class="section-title">Ultimate Classics (PSP/PS4)</div>
+    <div class="game-scroller">
         
-        <div class="game-grid">
-            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/41635-grand-theft-auto-san-andreas.html')">
-                <span>PS4 Edition</span>
-                <h3>GTA: San Andreas</h3>
-            </div>
-
-            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/41551-god-of-war-ii.html')">
-                <span>PS3 Remaster</span>
-                <h3>God of War II</h3>
-            </div>
-
-            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/41648-tekken-5.html')">
-                <span>Classic PS3</span>
-                <h3>Tekken 5: Dark Resurrection</h3>
-            </div>
-
-            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/42442-pro-evolution-soccer-2013.html')">
-                <span>Pro Evolution</span>
-                <h3>PES 2013 HD</h3>
-            </div>
-
-            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/41724-mortal-kombat-armageddon.html')">
-                <span>Kombat Pro</span>
-                <h3>Mortal Kombat: Armageddon</h3>
-            </div>
+        <div class="game-card" onclick="openSystem('https://www.retrogames.cc/embed/42601-naruto-shippuden-ultimate-ninja-5.html')">
+            <div class="category">PSP CLASSIC</div>
+            <h3>Naruto Shippuden</h3>
         </div>
 
-        <p style="color: #555; font-size: 0.9rem;">Select a title with your mouse or touch to boot system...</p>
+        <div class="game-card" onclick="openSystem('https://www.retrogames.cc/embed/41551-god-of-war-ii.html')">
+            <div class="category">PS4 REMASTER</div>
+            <h3>God of War II</h3>
+        </div>
+
+        <div class="game-card" onclick="openSystem('https://www.retrogames.cc/embed/41635-grand-theft-auto-san-andreas.html')">
+            <div class="category">PS4 EDITION</div>
+            <h3>GTA: San Andreas</h3>
+        </div>
+
+        <div class="game-card" onclick="openSystem('https://www.retrogames.cc/embed/41724-mortal-kombat-armageddon.html')">
+            <div class="category">PS5 KOMBAT</div>
+            <h3>Mortal Kombat</h3>
+        </div>
+
+        <div class="game-card" onclick="openSystem('https://www.retrogames.cc/embed/41648-tekken-5.html')">
+            <div class="category">PS4 LEGACY</div>
+            <h3>Tekken 5</h3>
+        </div>
+
     </div>
+</div>
 
-    <div id="console-screen">
-        <button class="exit-btn" onclick="closeConsole()">CLOSE SYSTEM [X]</button>
-        <div id="player-engine" style="width:100%; height:100%;"></div>
-    </div>
+<div id="main-stage">
+    <button class="close-system" onclick="closeSystem()">CLOSE CONSOLE [X]</button>
+    <div id="engine-container" style="width: 100%; height: 100%;"></div>
+</div>
 
-    <script>
-        function launchGame(url) {
-            const screen = document.getElementById('console-screen');
-            const engine = document.getElementById('player-engine');
-            
-            // Pro loading effect
-            engine.innerHTML = '<h2 style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">BOOTING SYSTEM...</h2>';
-            
-            setTimeout(() => {
-                engine.innerHTML = `<iframe src="${url}" allowfullscreen="true"></iframe>`;
-            }, 1000);
+<a href="https://wa.me/255763111390?text=I%20want%20to%20buy%20premium%20access" class="buy-now">
+    BUY PREMIUM ACCESS
+</a>
 
-            screen.style.display = 'block';
-        }
+<script>
+    function openSystem(url) {
+        const stage = document.getElementById('main-stage');
+        const container = document.getElementById('engine-container');
+        
+        // Show Booting Animation
+        container.innerHTML = '<div style="display:flex; height:100%; justify-content:center; align-items:center;"><h2>LINKING TO CLOUD SERVER...</h2></div>';
+        stage.style.display = 'block';
+        
+        setTimeout(() => {
+            container.innerHTML = `<iframe src="${url}" allowfullscreen="true" scrolling="no"></iframe>`;
+        }, 1500);
+    }
 
-        function closeConsole() {
-            document.getElementById('console-screen').style.display = 'none';
-            document.getElementById('player-engine').innerHTML = '';
-        }
-    </script>
+    function closeSystem() {
+        document.getElementById('main-stage').style.display = 'none';
+        document.getElementById('engine-container').innerHTML = '';
+    }
+</script>
+
 </body>
 </html>
