@@ -2,49 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NYONI-XMD-WAR | Tanzania Defense Force</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYONI-XMD-WAR | Tanzania Homeland Defense</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        canvas { display: block; cursor: crosshair; background: #3b4d21; /* Terrain Green */ }
+        body { margin: 0; overflow: hidden; background: #1a1a1a; font-family: 'Courier New', Courier, monospace; }
+        canvas { display: block; background: #4a5d23; /* Map ya msituni */ }
         
-        #overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: #ffd700; text-align: center;
-        }
-
-        #ui-panel {
+        /* UI ya Mchezo */
+        #game-ui {
             position: absolute; top: 10px; left: 10px; color: #fff;
-            background: rgba(0,0,0,0.6); padding: 15px; border-left: 5px solid #1e592f;
-            pointer-events: none; border-radius: 5px;
+            background: rgba(0, 0, 0, 0.7); padding: 15px; border-radius: 8px;
+            border: 2px solid #1e592f; pointer-events: none;
         }
 
-        .btn-start {
-            padding: 20px 50px; font-size: 24px; background: #1e592f; color: gold;
-            border: 3px solid gold; cursor: pointer; font-weight: bold; text-transform: uppercase;
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 30px; height: 30px; border: 2px solid red; border-radius: 50%; pointer-events: none;
         }
 
-        .status-bar { color: #00ff00; font-weight: bold; margin-bottom: 5px; }
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .btn-deploy {
+            padding: 20px 60px; font-size: 28px; background: #1e592f; color: #ffd700;
+            border: 4px solid #ffd700; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+
+        .btn-deploy:hover { background: #ffd700; color: #1e592f; }
+        h1 { color: #ffd700; font-size: 50px; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body>
 
-<div id="ui-panel">
-    <div class="status-bar">UNIT: JWTZ SPECIAL FORCES</div>
-    <div class="status-bar">MISSION: PROTECT NYONI-XMD-CAMP</div>
+<div id="start-screen">
+    <h1>NYONI-XMD-WAR</h1>
+    <p style="color: white; font-size: 20px;">Protect Tanzania Border & NYONI-XMD-CAMP</p>
+    <button class="btn-deploy" onclick="startGame()">DEPLOY JWTZ FORCES</button>
+</div>
+
+<div id="game-ui">
+    <div style="color: #ffd700; font-weight: bold;">UNIT: NYONI SPECIAL FORCES (JWTZ)</div>
+    <div>MISSION: DEFEND THE CAMP</div>
     <hr>
     <div>HEALTH: <span id="hp">100%</span></div>
     <div>AMMO: <span id="ammo">30/30</span></div>
-    <div>ENEMIES NEUTRALIZED: <span id="score">0</span></div>
+    <div>ENEMIES KILLED: <span id="kills">0</span></div>
 </div>
 
-<div id="overlay">
-    <h1 style="font-size: 60px; margin-bottom: 10px;">NYONI-XMD-WAR</h1>
-    <h3 style="color: white; margin-bottom: 30px;">Tanzania Homeland Defense Mission</h3>
-    <button class="btn-start" onclick="initGame()">DEPLOY TO BATTLE</button>
-    <p style="color: #ccc; margin-top: 20px;">Use WASD to Move | Mouse to Aim & Shoot</p>
-</div>
-
+<div id="crosshair"></div>
 <canvas id="warCanvas"></canvas>
 
 <script>
@@ -53,155 +61,126 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let gameActive = false;
-    let score = 0;
-    let playerHp = 100;
+    let isRunning = false;
+    let kills = 0;
+    let hp = 100;
     let ammo = 30;
-
-    const keys = {};
+    
     const bullets = [];
     const enemies = [];
-    
-    // JWTZ Soldier Object
-    const soldier = {
-        x: canvas.width / 2,
-        y: canvas.height - 150,
-        r: 15,
-        speed: 4,
-        angle: 0
-    };
+    const soldier = { x: canvas.width/2, y: canvas.height - 100, speed: 5, angle: 0 };
 
-    // Movement Listeners
+    // NYONI-XMD-CAMP Location
+    const camp = { x: canvas.width/2 - 200, y: 10, w: 400, h: 120 };
+
     window.addEventListener('keydown', e => keys[e.code] = true);
     window.addEventListener('keyup', e => keys[e.code] = false);
-    window.addEventListener('mousedown', shoot);
+    const keys = {};
+
     window.addEventListener('mousemove', e => {
         soldier.angle = Math.atan2(e.clientY - soldier.y, e.clientX - soldier.x);
     });
 
-    function initGame() {
-        document.getElementById('overlay').style.display = 'none';
-        gameActive = true;
-        spawnEnemy();
-        draw();
-    }
-
-    function shoot() {
-        if (ammo > 0 && gameActive) {
+    window.addEventListener('mousedown', () => {
+        if (ammo > 0 && isRunning) {
             bullets.push({
-                x: soldier.x + Math.cos(soldier.angle) * 20,
-                y: soldier.y + Math.sin(soldier.angle) * 20,
-                vx: Math.cos(soldier.angle) * 10,
-                vy: Math.sin(soldier.angle) * 10
+                x: soldier.x, y: soldier.y,
+                vx: Math.cos(soldier.angle) * 12,
+                vy: Math.sin(soldier.angle) * 12
             });
             ammo--;
             updateUI();
         }
+    });
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        isRunning = true;
+        spawnEnemy();
+        update();
     }
 
     function spawnEnemy() {
-        if(gameActive) {
-            enemies.push({
-                x: Math.random() * canvas.width,
-                y: -30,
-                speed: 1.5 + (score * 0.1)
-            });
+        if(isRunning) {
+            enemies.push({ x: Math.random() * canvas.width, y: -50, speed: 2 + (kills/10) });
             setTimeout(spawnEnemy, 1500);
         }
     }
 
     function updateUI() {
-        document.getElementById('hp').innerText = playerHp + "%";
+        document.getElementById('hp').innerText = hp + "%";
         document.getElementById('ammo').innerText = ammo + "/30";
-        document.getElementById('score').innerText = score;
-    }
-
-    // Drawing Functions
-    function drawCamp() {
-        // Main Base (NYONI-XMD-CAMP)
-        ctx.fillStyle = "#444";
-        ctx.fillRect(canvas.width/2 - 150, 20, 300, 100);
-        ctx.strokeStyle = "gold";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(canvas.width/2 - 150, 20, 300, 100);
-        
-        ctx.fillStyle = "white";
-        ctx.font = "bold 20px Arial";
-        ctx.fillText("NYONI-XMD-CAMP", canvas.width/2 - 90, 80);
-
-        // TZ Flag
-        ctx.fillStyle = "#1e592f"; ctx.fillRect(canvas.width/2 + 100, 40, 30, 20); // Green
-    }
-
-    function drawVehicles() {
-        // JWTZ Patrol Truck (Static Decoration)
-        ctx.fillStyle = "#2d3e1a"; 
-        ctx.fillRect(100, 300, 80, 40); // Body
-        ctx.fillStyle = "black"; ctx.fillRect(105, 335, 15, 10); ctx.fillRect(150, 335, 15, 10); // Wheels
-        ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.fillText("JWTZ-01", 110, 325);
-
-        // Motorcycle (Pikipiki ya Jeshi)
-        ctx.strokeStyle = "black"; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(canvas.width - 150, 400); ctx.lineTo(canvas.width - 100, 400); ctx.stroke();
-        ctx.fillStyle = "#2d3e1a"; ctx.fillRect(canvas.width - 135, 390, 25, 10);
+        document.getElementById('kills').innerText = kills;
     }
 
     function draw() {
-        if(!gameActive) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Ground Details
-        drawCamp();
-        drawVehicles();
+        // Map Decoration (Tanzania Savanna/Greenery)
+        ctx.fillStyle = "#3e4d21"; ctx.fillRect(0,0, canvas.width, canvas.height);
 
-        // Update & Draw Soldier (JWTZ Uniform Colors)
-        if (keys['KeyW']) soldier.y -= soldier.speed;
-        if (keys['KeyS']) soldier.y += soldier.speed;
-        if (keys['KeyA']) soldier.x -= soldier.speed;
-        if (keys['KeyD']) soldier.x += soldier.speed;
+        // NYONI-XMD-CAMP Building
+        ctx.fillStyle = "#333";
+        ctx.fillRect(camp.x, camp.y, camp.w, camp.h);
+        ctx.strokeStyle = "gold"; ctx.lineWidth = 5;
+        ctx.strokeRect(camp.x, camp.y, camp.w, camp.h);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 24px Arial";
+        ctx.fillText("NYONI-XMD-CAMP (HEADQUARTERS)", camp.x + 15, camp.y + 70);
 
+        // Magari na Pikipiki za Jeshi (Static)
+        ctx.fillStyle = "#1b3314"; ctx.fillRect(100, 400, 100, 50); // JWTZ Tank
+        ctx.fillText("JWTZ TANK", 100, 470);
+        
+        // JWTZ Soldier (Player)
         ctx.save();
         ctx.translate(soldier.x, soldier.y);
         ctx.rotate(soldier.angle);
-        // Uniform (Green/Camo)
-        ctx.fillStyle = "#354a21"; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
-        // Weapon (Gun)
-        ctx.fillStyle = "black"; ctx.fillRect(10, -4, 25, 8);
+        ctx.fillStyle = "#2e4d23"; // Gwanda la kijani la JWTZ
+        ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "black"; ctx.fillRect(15, -5, 30, 10); // Bunduki
         ctx.restore();
 
-        // Bullets
+        // Risasi
         bullets.forEach((b, i) => {
             b.x += b.vx; b.y += b.vy;
             ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
-            if(b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(i, 1);
+            if(b.y < 0) bullets.splice(i, 1);
         });
 
-        // Enemies (Invaders)
+        // Maadui
         enemies.forEach((en, i) => {
             en.y += en.speed;
-            ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(en.x, en.y, 15, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(en.x, en.y, 18, 0, Math.PI*2); ctx.fill();
             
-            // Bullet Collision
+            // Bullet hit
             bullets.forEach((b, bi) => {
-                let dist = Math.hypot(en.x - b.x, en.y - b.y);
-                if(dist < 20) {
+                if(Math.hypot(en.x - b.x, en.y - b.y) < 25) {
                     enemies.splice(i, 1);
                     bullets.splice(bi, 1);
-                    score += 10;
+                    kills++;
                     updateUI();
                 }
             });
 
-            // Camp Attack Detection
-            if(en.y > 100 && en.y < 120 && en.x > canvas.width/2 - 150 && en.x < canvas.width/2 + 150) {
-                gameActive = false;
-                alert("GAME OVER! NYONI-XMD-CAMP HAS FALLEN. Final Score: " + score);
+            // Camp Attack
+            if(en.y > camp.y + camp.h - 20 && en.x > camp.x && en.x < camp.x + camp.w) {
+                alert("MISSION FAILED! NYONI-XMD-CAMP WAS CAPTURED.");
                 location.reload();
             }
         });
+    }
 
-        requestAnimationFrame(draw);
+    function update() {
+        if(!isRunning) return;
+        if (keys['KeyW']) soldier.y -= soldier.speed;
+        if (keys['KeyS']) soldier.y += soldier.speed;
+        if (keys['KeyA']) soldier.x -= soldier.speed;
+        if (keys['KeyD']) soldier.x += soldier.speed;
+        
+        draw();
+        requestAnimationFrame(update);
     }
 </script>
+
 </body>
 </html>
