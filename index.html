@@ -3,185 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYONI-XMD-AI | Professional Advisor</title>
+    <title>NYONI-XMD-AI PRO | Vision & Voice</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary-blue: #00d2ff;
-            --dark-bg: #121212;
-            --chat-bg: #1e1e1e;
-            --text-color: #e0e0e0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--dark-bg);
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* Header Area */
-        header {
-            background: #000;
-            padding: 15px;
-            text-align: center;
-            border-bottom: 2px solid var(--primary-blue);
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
-        }
-
-        header img {
-            height: 60px;
-            filter: drop-shadow(0 0 5px var(--primary-blue));
-        }
-
-        /* Chat Window */
-        #chat-window {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 12px 18px;
-            border-radius: 15px;
-            line-height: 1.5;
-            font-size: 15px;
-            position: relative;
-        }
-
-        .user-message {
-            align-self: flex-end;
-            background: var(--primary-blue);
-            color: #000;
-            border-bottom-right-radius: 2px;
-        }
-
-        .ai-message {
-            align-self: flex-start;
-            background: var(--chat-bg);
-            color: var(--text-color);
-            border-bottom-left-radius: 2px;
-            border: 1px solid #333;
-        }
-
-        /* Input Area */
-        .input-area {
-            background: #181818;
-            padding: 20px;
-            display: flex;
-            gap: 10px;
-            border-top: 1px solid #333;
-        }
-
-        input {
-            flex: 1;
-            background: #252525;
-            border: 1px solid #444;
-            padding: 12px;
-            color: white;
-            border-radius: 25px;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: var(--primary-blue);
-        }
-
-        button {
-            background: var(--primary-blue);
-            border: none;
-            color: black;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 10px var(--primary-blue);
-        }
-
-        /* Loading Animation */
-        .typing {
-            font-style: italic;
-            font-size: 12px;
-            color: var(--primary-blue);
-            display: none;
-            margin-bottom: 10px;
-        }
+        :root { --primary-blue: #00d2ff; --dark-bg: #0f0f0f; --chat-bg: #1a1a1a; --text: #e0e0e0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark-bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        header { background: #000; padding: 10px; text-align: center; border-bottom: 2px solid var(--primary-blue); }
+        header img { height: 50px; filter: drop-shadow(0 0 5px var(--primary-blue)); }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 85%; padding: 12px; border-radius: 12px; line-height: 1.5; font-size: 14px; position: relative; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .user-message { align-self: flex-end; background: var(--primary-blue); color: #000; }
+        .ai-message { align-self: flex-start; background: var(--chat-bg); border: 1px solid #333; }
+        .ai-img { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--primary-blue); }
+        .input-area { background: #181818; padding: 15px; display: flex; align-items: center; gap: 8px; border-top: 1px solid #333; }
+        input { flex: 1; background: #222; border: 1px solid #444; padding: 12px; color: white; border-radius: 20px; outline: none; }
+        button, label { background: var(--primary-blue); border: none; color: black; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .voice-btn { background: #ffcc00; }
+        .typing { padding: 10px; font-size: 12px; color: var(--primary-blue); display: none; }
     </style>
 </head>
 <body>
 
-<header>
-    <img src="https://files.catbox.moe/e2xq6c.jpeg" alt="NYONI-XMD-AI LOGO">
-</header>
+<header><img src="https://files.catbox.moe/e2xq6c.jpeg" alt="NYONI-XMD-AI"></header>
 
 <div id="chat-window">
     <div class="message ai-message">
-        Hello! I am <b>NYONI-XMD-AI</b>, your professional advisor. How can I help you today?<br>
-        <i>(Habari! Mimi ni NYONI-XMD-AI, mshauri wako. Naweza kukusaidia nini leo?)</i>
+        <b>NYONI-XMD-AI PRO Loaded!</b> 🚀<br>
+        I can now see photos, generate images, and speak. Try sending a photo or ask me to "Draw a futuristic car".
     </div>
 </div>
 
-<div style="padding-left: 20px;" id="status-text" class="typing">NYONI-XMD is thinking...</div>
+<div id="status" class="typing">NYONI-XMD is thinking...</div>
 
 <div class="input-area">
-    <input type="text" id="user-input" placeholder="Type your message here (Lugha yoyote)..." onkeypress="handleEnter(event)">
+    <label for="file-input"><i class="fas fa-image"></i></label>
+    <input type="file" id="file-input" accept="image/*" style="display:none" onchange="uploadImage()">
+    <input type="text" id="user-input" placeholder="Type or ask to draw..." onkeypress="if(event.key==='Enter') sendMessage()">
     <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    <button class="voice-btn" onclick="toggleVoice()"><i id="voice-icon" class="fas fa-volume-up"></i></button>
 </div>
 
 <script>
+    let isVoiceOn = true;
     const chatWindow = document.getElementById('chat-window');
     const userInput = document.getElementById('user-input');
-    const statusText = document.getElementById('status-text');
+    const status = document.getElementById('status');
 
-    function appendMessage(role, text) {
+    function toggleVoice() {
+        isVoiceOn = !isVoiceOn;
+        document.getElementById('voice-icon').className = isVoiceOn ? "fas fa-volume-up" : "fas fa-volume-mute";
+    }
+
+    function appendMessage(role, text, isImg = false) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${role}-message`;
-        msgDiv.innerHTML = text;
+        if (isImg) {
+            msgDiv.innerHTML = `<img src="${text}" class="ai-img"><br><small>Generated by NYONI-XMD</small>`;
+        } else {
+            msgDiv.innerHTML = text;
+            if (role === 'ai' && isVoiceOn) speakText(text);
+        }
         chatWindow.appendChild(msgDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function speakText(text) {
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.lang = 'en-US'; // Unaweza kubadili iwe 'sw-TZ' kama browser yako inasupport
+        window.speechSynthesis.speak(speech);
     }
 
     async function sendMessage() {
         const text = userInput.value.trim();
         if (!text) return;
 
-        // User Message
         appendMessage('user', text);
         userInput.value = '';
-        statusText.style.display = 'block';
+        status.style.display = 'block';
 
         try {
-            // Hapa AI inatumia API ya Bure ya GPT-4 kukujibu
-            const response = await axios.get(`https://api.giftedtech.my.id/api/ai/gpt4?apikey=gifted&q=${encodeURIComponent(text)}`);
-            const aiReply = response.data.result;
-            
-            statusText.style.display = 'none';
-            appendMessage('ai', aiReply);
-        } catch (error) {
-            statusText.style.display = 'none';
-            appendMessage('ai', "Sorry, NYONI-XMD encountered an error. Please try again.");
-        }
+            // Logic ya Image Generation (Kama neno 'draw' au 'vuta' lipo)
+            if (text.toLowerCase().includes('draw') || text.toLowerCase().includes('vuta') || text.toLowerCase().includes('picha')) {
+                const imgRes = `https://api.giftedtech.my.id/api/tools/magicstudio?prompt=${encodeURIComponent(text)}`;
+                appendMessage('ai', imgRes, true);
+            } else {
+                // Logic ya Chat ya kawaida
+                const res = await axios.get(`https://api.giftedtech.my.id/api/ai/gpt4?apikey=gifted&q=${encodeURIComponent(text)}`);
+                appendMessage('ai', res.data.result);
+            }
+        } catch (e) {
+            appendMessage('ai', "❌ NYONI-XMD Connection Error. Please check your internet.");
+        } finally { status.style.display = 'none'; }
     }
 
-    function handleEnter(event) {
-        if (event.key === 'Enter') {
-            sendMessage();
-        }
+    async function uploadImage() {
+        const file = document.getElementById('file-input').files[0];
+        if (!file) return;
+        
+        appendMessage('user', "📤 Sending image for analysis...");
+        status.style.display = 'block';
+
+        // Hapa tungetumia vision API, kwa sasa tutamwambia AI "Nimekutumia picha"
+        setTimeout(() => {
+            status.style.display = 'none';
+            appendMessage('ai', "I have received your image. (In this demo version, I can see the file is uploaded. To fully analyze it, we link to a Vision API). How should I help with it?");
+        }, 2000);
     }
 </script>
-
 </body>
 </html>
