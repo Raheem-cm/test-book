@@ -1,99 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYONI-XMD-AI PRO</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --blue: #00d2ff; --bg: #0d0d0d; --chat: #1a1a1a; --text: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: #000; padding: 10px; text-align: center; border-bottom: 2px solid var(--blue); }
+        header img { height: 45px; filter: drop-shadow(0 0 5px var(--blue)); }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background-image: radial-gradient(circle at center, #111 0%, #000 100%); }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .user { align-self: flex-end; background: var(--blue); color: #000; font-weight: 500; border-bottom-right-radius: 2px; }
+        .ai { align-self: flex-start; background: var(--chat); border: 1px solid #333; border-bottom-left-radius: 2px; }
+        .ai img { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1.5px solid var(--blue); }
+        .input-area { background: #000; padding: 15px; display: flex; gap: 10px; align-items: center; border-top: 1px solid #222; }
+        input { flex: 1; background: #1a1a1a; border: 1px solid #333; padding: 12px 20px; color: #fff; border-radius: 30px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--blue); box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        button { background: var(--blue); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .v-btn { background: #222; color: #555; font-size: 16px; }
+        .v-on { background: #ffcc00; color: #000; box-shadow: 0 0 10px #ffcc00; }
+        .loading { padding: 5px 20px; font-size: 12px; color: var(--blue); display: none; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<header><img src="https://files.catbox.moe/e2xq6c.jpeg" alt="NYONI-XMD"></header>
+
+<div id="chat-box">
+    <div class="msg ai"><b>Welcome Boss!</b> I am NYONI-XMD-AI, your smart advisor. <br><br>Sauti iko OFF. Gusa button ya njano chini ili nianze kuongea majibu.</div>
+</div>
+
+<div id="loading" class="loading">NYONI-XMD-AI is thinking...</div>
+
+<div class="input-area">
+    <input type="text" id="query" placeholder="Uliza chochote..." onkeypress="if(event.key==='Enter') startChat()">
+    <button onclick="startChat()"><i class="fas fa-paper-plane"></i></button>
+    <button id="vBtn" class="v-btn" onclick="toggleVoice()"><i class="fas fa-volume-up"></i></button>
+</div>
+
 <script>
-let voiceActive = false;
-const chatBox = document.getElementById('chat-box');
-const loading = document.getElementById('loading');
+    let voiceActive = false;
+    const chatBox = document.getElementById('chat-box');
+    const loading = document.getElementById('loading');
 
-function toggleVoice() {
-    voiceActive = !voiceActive;
-    const btn = document.getElementById('vBtn');
-    btn.className = voiceActive ? "v-btn v-on" : "v-btn";
-    if (!voiceActive) window.speechSynthesis.cancel();
-}
-
-function addMsg(type, content, isImg = false) {
-    const div = document.createElement('div');
-    div.className = `msg ${type}`;
-
-    if (isImg) {
-        div.innerHTML = `<img src="${content}">`;
-    } else {
-        div.innerText = content;
-        if (type === 'ai' && voiceActive) speak(content);
+    function toggleVoice() {
+        voiceActive = !voiceActive;
+        const btn = document.getElementById('vBtn');
+        btn.className = voiceActive ? "v-btn v-on" : "v-btn";
+        if(!voiceActive) window.speechSynthesis.cancel();
     }
 
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function speak(txt) {
-    const s = new SpeechSynthesisUtterance(txt);
-    s.lang = 'en-US';
-    window.speechSynthesis.speak(s);
-}
-
-// 🔥 MAIN AI FUNCTION (WITH FALLBACK)
-async function getAIResponse(query) {
-    try {
-        // API 1 (primary)
-        let res = await axios.get(`https://api.giftedtech.my.id/api/ai/gpt4`, {
-            params: { apikey: "gifted", q: query },
-            timeout: 10000
-        });
-
-        if (res.data && res.data.result) {
-            return res.data.result;
-        }
-    } catch (e) {
-        console.log("API 1 failed...");
-    }
-
-    try {
-        // API 2 (fallback 🔥)
-        let res2 = await axios.get(`https://api.popcat.xyz/chatbot`, {
-            params: {
-                msg: query,
-                owner: "Nyoni",
-                botname: "NYONI-XMD"
-            },
-            timeout: 10000
-        });
-
-        if (res2.data && res2.data.response) {
-            return res2.data.response;
-        }
-    } catch (e) {
-        console.log("API 2 failed...");
-    }
-
-    return "⚠️ AI imechoka kidogo 😅, jaribu tena baada ya muda.";
-}
-
-async function startChat() {
-    const input = document.getElementById('query');
-    const val = input.value.trim();
-    if (!val) return;
-
-    addMsg('user', val);
-    input.value = '';
-    loading.style.display = 'block';
-
-    try {
-        // 🎨 IMAGE GENERATION
-        if (
-            val.toLowerCase().includes('draw') ||
-            val.toLowerCase().includes('picha') ||
-            val.toLowerCase().includes('image')
-        ) {
-            const img = `https://image.pollinations.ai/prompt/${encodeURIComponent(val)}`;
-            addMsg('ai', img, true);
+    function addMsg(type, content, isImg = false) {
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        if(isImg) {
+            div.innerHTML = `<img src="${content}"><br><small style="font-size:10px; opacity:0.6">Image by NYONI-XMD-AI</small>`;
         } else {
-            const reply = await getAIResponse(val);
-            addMsg('ai', reply);
+            div.innerText = content;
+            if(type === 'ai' && voiceActive) speak(content);
         }
-    } catch (err) {
-        addMsg('ai', "⚠️ Network error, check internet yako.");
-    } finally {
-        loading.style.display = 'none';
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
-}
+
+    function speak(txt) {
+        const s = new SpeechSynthesisUtterance(txt);
+        s.lang = 'en-US';
+        window.speechSynthesis.speak(s);
+    }
+
+    async function startChat() {
+        const val = document.getElementById('query').value.trim();
+        if(!val) return;
+        
+        addMsg('user', val);
+        document.getElementById('query').value = '';
+        loading.style.display = 'block';
+
+        try {
+            // Picha kwanza (Pollinations - Always Online)
+            if(val.toLowerCase().includes('draw') || val.toLowerCase().includes('vuta picha') || val.toLowerCase().includes('create image')) {
+                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(val)}?width=1024&height=1024&seed=${Math.floor(Math.random()*1000)}&model=flux`;
+                addMsg('ai', imgUrl, true);
+            } else {
+                // Blackbox AI API (Stable & No Keys required)
+                const res = await axios.post('https://www.blackbox.ai/api/chat', {
+                    messages: [{ role: "user", content: `Your name is NYONI-XMD-AI, a professional advisor from Tanzania. Answer this: ${val}` }],
+                    model: "deepseek-v3"
+                });
+                
+                let reply = res.data;
+                // Safisha kama kuna mabaki ya markdown au code
+                if (typeof reply === 'object') reply = JSON.stringify(reply);
+                addMsg('ai', reply.replace(/\$@\$.*?\$@\$/g, '').trim() || "I am here. How can I assist?");
+            }
+        } catch (e) {
+            console.error(e);
+            addMsg('ai', "⚠️ Connection refreshed. Try asking again now.");
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
 </script>
+</body>
+</html>
