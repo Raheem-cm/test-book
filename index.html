@@ -3,229 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYONI-XMD-AI | PS2 Free Games Hub</title>
+    <title>NYONI-XMD-AI | Pro Gaming Station</title>
     <style>
         :root {
-            --primary-blue: #003791; /* Classic PS2 Blue */
-            --accent-gold: #ffcc00; /* Bright Gold */
-            --neon-purple: #8a2be2; /* Neon Purple Accent */
-            --bg-intense: url('https://files.catbox.moe/kixq1b.jpg'); /* Intense Gaming Background */
+            --ps-blue: #003791;
+            --ps-glow: #0072ff;
+            --glass: rgba(255, 255, 255, 0.1);
         }
 
-        body {
-            background-color: #000;
-            background-image: var(--bg-intense);
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
-            color: white;
-            font-family: 'Segoe UI', 'Roboto', sans-serif;
+        body, html {
             margin: 0;
             padding: 0;
-            text-align: center;
-        }
-
-        /* Header (Styled Banner) */
-        header {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), 
-                        url('https://files.catbox.moe/e2xq6c.jpeg');
-            background-size: cover;
-            background-position: top;
-            height: 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-bottom: 3px solid var(--accent-gold);
-            margin-bottom: 20px;
-        }
-
-        header h1 {
-            font-size: 3.5rem;
-            margin: 0;
-            text-shadow: 0 0 15px var(--accent-gold), 0 0 30px var(--neon-purple);
-            color: #fff;
-            letter-spacing: 2px;
-        }
-
-        header p {
-            margin: 5px 0 0;
-            font-size: 1.2rem;
-            color: #ddd;
-        }
-
-        /* Game Player Section (FullScreen Layout) */
-        #game-section {
-            display: none; /* Hidden by default until a game is selected */
-            width: 100vw;
-            height: 95vh; /* Almost full viewport height */
+            width: 100%;
+            height: 100%;
             background: #000;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+            overflow: hidden; /* Lock scroll for console feel */
+        }
+
+        /* High-End Dynamic Background */
+        .bg-video {
             position: fixed;
             top: 0;
             left: 0;
-            z-index: 1000;
-        }
-
-        .game-iframe-container {
             width: 100%;
             height: 100%;
-            border: none;
-            overflow: hidden;
-            position: relative;
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(0.4) contrast(1.2);
         }
 
-        .game-iframe-container iframe {
+        /* Top Navigation Bar */
+        nav {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 50px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            position: fixed;
+            top: 0;
             width: 100%;
-            height: 100%;
-            border: none;
+            z-index: 10;
         }
 
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            background-color: var(--accent-gold);
-            color: #000;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
+        .logo {
             font-weight: bold;
-            z-index: 1001;
-        }
-
-        /* Game List Section */
-        .container {
-            padding: 20px;
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        h2 {
+            font-size: 24px;
+            letter-spacing: 3px;
             color: #fff;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        .game-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px;
-            padding: 20px;
+        /* Main Game Deck */
+        .main-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 80px;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-left: 4px solid var(--ps-glow);
+            padding-left: 15px;
+        }
+
+        .game-grid {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0;
+            scrollbar-width: none; /* Hide scrollbar */
         }
 
         .game-card {
-            background: rgba(17, 17, 17, 0.8); /* Semi-transparent background */
+            min-width: 280px;
+            height: 160px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
             padding: 20px;
-            border-radius: 12px;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            transition: all 0.4s ease;
-            border: 2px solid #333;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
         }
 
         .game-card:hover {
-            background: rgba(0, 55, 145, 0.9); /* PS2 Blue Hover */
-            transform: scale(1.08) translateY(-5px);
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 20px var(--accent-gold);
+            transform: scale(1.1);
+            border-color: var(--ps-glow);
+            box-shadow: 0 0 30px rgba(0, 114, 255, 0.5);
+            background: rgba(255,255,255,0.2);
         }
 
-        .game-card p {
-            margin: 10px 0 0;
-            font-size: 1.1rem;
+        .game-card h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            z-index: 2;
+        }
+
+        .game-card span {
+            font-size: 0.8rem;
+            color: var(--ps-glow);
             font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 3px black;
+            text-transform: uppercase;
         }
 
-        footer {
-            padding: 30px;
-            background: rgba(0,0,0,0.9);
-            margin-top: 50px;
-            font-size: 0.9rem;
-            border-top: 2px solid #333;
+        /* Full Screen Overlay */
+        #console-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .exit-btn {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10000;
+            transition: 0.3s;
+        }
+
+        .exit-btn:hover { background: red; }
+
+        /* Custom Header using your provided image */
+        .hero-banner {
+            position: absolute;
+            top: 60px;
+            right: 50px;
+            width: 400px;
+            height: 200px;
+            background: url('https://files.catbox.moe/e2xq6c.jpeg') center/cover;
+            border-radius: 20px;
+            border: 2px solid var(--ps-glow);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>NYONI-XMD-AI</h1>
-    <p>Premium PS2 Free Games Hub</p>
-</header>
+    <div class="bg-video" style="background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);"></div>
 
-<div class="container">
-    <h2>Available Game Titles</h2>
-    
-    <div class="game-list">
-        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/41635-grand-theft-auto-san-andreas.html')">
-            <p>GTA San Andreas</p>
-        </div>
+    <nav>
+        <div class="logo">NYONI-XMD-AI <span style="color:var(--ps-glow)">PRO</span></div>
+    </nav>
 
-        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/41551-god-of-war-ii.html')">
-            <p>God of War II</p>
-        </div>
+    <div class="hero-banner"></div>
 
-        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/42601-naruto-shippuden-ultimate-ninja-5.html')">
-            <p>Naruto Shippuden 5</p>
-        </div>
-
-        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/42442-pro-evolution-soccer-2013.html')">
-            <p>PES 2013</p>
-        </div>
+    <div class="main-container">
+        <div class="category-title">PlayStation Collection</div>
         
-        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/41648-tekken-5.html')">
-            <p>Tekken 5</p>
+        <div class="game-grid">
+            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/41635-grand-theft-auto-san-andreas.html')">
+                <span>PS4 Edition</span>
+                <h3>GTA: San Andreas</h3>
+            </div>
+
+            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/41551-god-of-war-ii.html')">
+                <span>PS3 Remaster</span>
+                <h3>God of War II</h3>
+            </div>
+
+            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/41648-tekken-5.html')">
+                <span>Classic PS3</span>
+                <h3>Tekken 5: Dark Resurrection</h3>
+            </div>
+
+            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/42442-pro-evolution-soccer-2013.html')">
+                <span>Pro Evolution</span>
+                <h3>PES 2013 HD</h3>
+            </div>
+
+            <div class="game-card" onclick="launchGame('https://www.retrogames.cc/embed/41724-mortal-kombat-armageddon.html')">
+                <span>Kombat Pro</span>
+                <h3>Mortal Kombat: Armageddon</h3>
+            </div>
         </div>
 
-        <div class="game-card" onclick="playGame('https://www.retrogames.cc/embed/41724-mortal-kombat-armageddon.html')">
-            <p>Mortal Kombat: Armageddon</p>
-        </div>
+        <p style="color: #555; font-size: 0.9rem;">Select a title with your mouse or touch to boot system...</p>
     </div>
-</div>
 
-<div id="game-section">
-    <button class="close-btn" onclick="closeGame()">Close Game [X]</button>
-    <div class="game-iframe-container" id="player-container">
-        </div>
-</div>
+    <div id="console-screen">
+        <button class="exit-btn" onclick="closeConsole()">CLOSE SYSTEM [X]</button>
+        <div id="player-engine" style="width:100%; height:100%;"></div>
+    </div>
 
-<footer>
-    &copy; 2024 NYONI-XMD-AI - All Rights Reserved | Non-profit emulation platform.
-</footer>
+    <script>
+        function launchGame(url) {
+            const screen = document.getElementById('console-screen');
+            const engine = document.getElementById('player-engine');
+            
+            // Pro loading effect
+            engine.innerHTML = '<h2 style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">BOOTING SYSTEM...</h2>';
+            
+            setTimeout(() => {
+                engine.innerHTML = `<iframe src="${url}" allowfullscreen="true"></iframe>`;
+            }, 1000);
 
-<script>
-    function playGame(url) {
-        const gameSection = document.getElementById('game-section');
-        const container = document.getElementById('player-container');
-        
-        // Inject the iframe
-        container.innerHTML = `<iframe src="${url}" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no"></iframe>`;
-        
-        // Show the fullscreen player
-        gameSection.style.display = 'block';
-        
-        // Add a class to body to prevent scrolling background while playing
-        document.body.style.overflow = 'hidden';
-    }
+            screen.style.display = 'block';
+        }
 
-    function closeGame() {
-        const gameSection = document.getElementById('game-section');
-        const container = document.getElementById('player-container');
-        
-        // Hide the player
-        gameSection.style.display = 'none';
-        
-        // Destroy the iframe (stops the music/game)
-        container.innerHTML = '';
-        
-        // Re-enable body scrolling
-        document.body.style.overflow = 'auto';
-    }
-</script>
-
+        function closeConsole() {
+            document.getElementById('console-screen').style.display = 'none';
+            document.getElementById('player-engine').innerHTML = '';
+        }
+    </script>
 </body>
 </html>
