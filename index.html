@@ -18,10 +18,14 @@
         .input-container { position: fixed; bottom: 0; width: 100%; background: #000; padding: 15px 10px; border-top: 1px solid #222; box-sizing: border-box; z-index: 1000; }
         .input-area { display: flex; gap: 8px; align-items: center; max-width: 600px; margin: 0 auto; }
         input { flex: 1; background: #1a1a1a; border: 1px solid #333; padding: 12px 18px; color: #fff; border-radius: 25px; outline: none; font-size: 15px; }
-        button { background: var(--blue); border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: black; font-size: 20px; }
+        input::placeholder { color: #666; }
+        button { background: var(--blue); border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: black; font-size: 20px; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         .v-btn { background: #222; color: #555; }
         .v-on { background: #ffcc00; color: #000; box-shadow: 0 0 10px #ffcc00; }
-        .loader { position: fixed; bottom: 90px; left: 20px; font-size: 12px; color: var(--blue); display: none; font-style: italic; }
+        .loader { position: fixed; bottom: 90px; left: 20px; font-size: 12px; color: var(--blue); display: none; font-style: italic; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
     </style>
 </head>
 <body>
@@ -37,7 +41,7 @@
 <div class="input-container">
     <div class="input-area">
         <input type="text" id="query" placeholder="Sema nami mwanangu..." onkeypress="if(event.key==='Enter') startChat()">
-        <button onclick="startChat()"><i class="fas fa-paper-plane"></i></button>
+        <button id="sendBtn" onclick="startChat()"><i class="fas fa-paper-plane"></i></button>
         <button id="vBtn" class="v-btn" onclick="toggleVoice()"><i class="fas fa-volume-up"></i></button>
     </div>
 </div>
@@ -57,9 +61,9 @@
         const div = document.createElement('div');
         div.className = `msg ${type}`;
         if(isImg) {
-            div.innerHTML = `<img src="${content}">`;
+            div.innerHTML = `<img src="${content}" onerror="this.style.display='none'">`;
         } else {
-            div.innerText = content;
+            div.textContent = content;
             if(type === 'ai' && voiceActive) speak(content);
         }
         chatBox.appendChild(div);
@@ -67,37 +71,92 @@
     }
 
     function speak(txt) {
-        const s = new SpeechSynthesisUtterance(txt);
-        s.lang = 'sw-TZ';
-        window.speechSynthesis.speak(s);
+        try {
+            const s = new SpeechSynthesisUtterance(txt);
+            s.lang = 'sw-TZ';
+            s.rate = 0.9;
+            window.speechSynthesis.speak(s);
+        } catch (e) {
+            console.log('Speech synthesis not available');
+        }
+    }
+
+    async function getAIResponse(query) {
+        try {
+            // Try multiple AI APIs for better reliability
+            const apis = [
+                {
+                    url: `https://api.giftedtech.my.id/api/ai/gemini?apikey=gifted&q=${encodeURIComponent(systemPrompt + " Swali: " + query)}`,
+                    parse: (data) => data.result
+                },
+                {
+                    url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(query)}`,
+                    parse: (data) => data.ans || data.result
+                }
+            ];
+
+            for (let api of apis) {
+                try {
+                    const res = await Promise.race([
+                        fetch(api.url),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+                    ]);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const reply = api.parse(data);
+                        if (reply) return reply;
+                    }
+                } catch (e) {
+                    console.log('API failed, trying next...');
+                }
+            }
+
+            // Fallback response
+            return "Nipo haja kidogo boss, lakini umekweli! Majibu yangu yapo mapema. Una lingine la kuongeza?";
+        } catch (e) {
+            return "Samahani boss, nimekwama kidogo. Jaribu tena sasa hivi.";
+        }
     }
 
     async function startChat() {
-        const val = document.getElementById('query').value.trim();
+        const input = document.getElementById('query');
+        const sendBtn = document.getElementById('sendBtn');
+        const val = input.value.trim();
+        
         if(!val) return;
         
         addMsg('user', val);
-        document.getElementById('query').value = '';
+        input.value = '';
+        sendBtn.disabled = true;
         document.getElementById('loader').style.display = 'block';
 
         try {
-            if(val.toLowerCase().includes('draw') || val.toLowerCase().includes('nivutie') || val.toLowerCase().includes('picha')) {
-                const img = `https://image.pollinations.ai/prompt/${encodeURIComponent(val)}?nologo=true&seed=${Math.random()}`;
-                addMsg('ai', img, true);
+            const lowerVal = val.toLowerCase();
+            
+            // Image generation requests
+            if(lowerVal.includes('draw') || lowerVal.includes('nivutie') || lowerVal.includes('picha') || lowerVal.includes('image')) {
+                const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(val)}?nologo=true&seed=${Math.random()}`;
+                addMsg('ai', imgUrl, true);
             } else {
-                // Hapa tunatumia Google Gemini AI kupitia API ya bure na ya haraka
-                const res = await fetch(`https://api.giftedtech.my.id/api/ai/gemini?apikey=gifted&q=${encodeURIComponent(systemPrompt + " Swali la mtumiaji: " + val)}`);
-                const data = await res.json();
-                
-                let reply = data.result || "Nipo hapa kiongozi, nimekusoma. Una lingine la kuongeza?";
+                // Get AI text response
+                const reply = await getAIResponse(val);
                 addMsg('ai', reply);
             }
         } catch (e) {
-            addMsg('ai', "Samahani boss, nimekwama kidogo. Jaribu tena sasa hivi.");
+            addMsg('ai', "Samahani boss, kosa fulani lilitokea. Jaribu tena.");
         } finally {
+            sendBtn.disabled = false;
             document.getElementById('loader').style.display = 'none';
         }
     }
+
+    // Allow Enter key to submit
+    document.getElementById('query').addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            startChat();
+        }
+    });
 </script>
 </body>
 </html>
