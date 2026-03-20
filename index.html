@@ -3,108 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NYONI-XMD-AI | Pro Advisor</title>
+    <title>NYONI-XMD-AI | Real Advisor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --blue: #00d2ff; --bg: #0a0a0a; --chat: #161616; --text: #ffffff; }
-        
-        body, html { 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        header { 
-            background: #000; 
-            padding: 10px; 
-            text-align: center; 
-            border-bottom: 2px solid var(--blue); 
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-        }
-        header img { height: 40px; }
-
-        #chat-box { 
-            padding: 70px 15px 100px 15px; /* Nafasi ya juu na chini */
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .msg { 
-            max-width: 85%; 
-            padding: 12px 16px; 
-            border-radius: 18px; 
-            font-size: 14px; 
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-        .user { align-self: flex-end; background: var(--blue); color: #000; border-bottom-right-radius: 2px; }
+        body, html { background: var(--bg); color: var(--text); margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        header { background: #000; padding: 12px; text-align: center; border-bottom: 2px solid var(--blue); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        header img { height: 40px; filter: drop-shadow(0 0 5px var(--blue)); }
+        #chat-box { padding: 80px 15px 120px 15px; display: flex; flex-direction: column; gap: 15px; height: 100vh; overflow-y: auto; box-sizing: border-box; }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; word-wrap: break-word; position: relative; }
+        .user { align-self: flex-end; background: var(--blue); color: #000; border-bottom-right-radius: 2px; font-weight: 500; }
         .ai { align-self: flex-start; background: var(--chat); border: 1px solid #333; border-bottom-left-radius: 2px; }
         .ai img { max-width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid var(--blue); }
-
-        .input-container {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: #000;
-            padding: 15px 10px;
-            border-top: 1px solid #222;
-            box-sizing: border-box;
-            z-index: 1000;
-        }
-
-        .input-area {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        input { 
-            flex: 1; 
-            background: #1a1a1a; 
-            border: 1px solid #333; 
-            padding: 12px 15px; 
-            color: #fff; 
-            border-radius: 25px; 
-            outline: none;
-            font-size: 14px;
-        }
-
-        button { 
-            background: var(--blue); 
-            border: none; 
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            color: black;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
+        .input-container { position: fixed; bottom: 0; width: 100%; background: #000; padding: 15px 10px; border-top: 1px solid #222; box-sizing: border-box; z-index: 1000; }
+        .input-area { display: flex; gap: 8px; align-items: center; max-width: 600px; margin: 0 auto; }
+        input { flex: 1; background: #1a1a1a; border: 1px solid #333; padding: 12px 18px; color: #fff; border-radius: 25px; outline: none; font-size: 15px; }
+        button { background: var(--blue); border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: black; font-size: 20px; }
         .v-btn { background: #222; color: #555; }
-        .v-on { background: #ffcc00; color: #000; }
-        
-        .loader { 
-            position: fixed; 
-            bottom: 85px; 
-            left: 20px; 
-            font-size: 12px; 
-            color: var(--blue); 
-            display: none; 
-        }
+        .v-on { background: #ffcc00; color: #000; box-shadow: 0 0 10px #ffcc00; }
+        .loader { position: fixed; bottom: 90px; left: 20px; font-size: 12px; color: var(--blue); display: none; font-style: italic; }
     </style>
 </head>
 <body>
@@ -112,14 +29,14 @@
 <header><img src="https://files.catbox.moe/e2xq6c.jpeg" alt="NYONI-XMD"></header>
 
 <div id="chat-box">
-    <div class="msg ai"><b>NYONI-XMD-AI Connected!</b> 🚀<br>Ninaweza kuchat na kuvuta picha. <br><br>Sehemu ya kuandika iko hapo chini kabisa.</div>
+    <div class="msg ai"><b>Mambo vipi Boss!</b> 🚀<br>Mimi ni NYONI-XMD-AI. Siyo roboti wa kawaida, nipo hapa kukupa ushauri wa maana. <br><br>Gusa button ya njano kuwasha sauti yangu.</div>
 </div>
 
-<div id="loader" class="loader">NYONI-XMD-AI is thinking...</div>
+<div id="loader" class="loader">NYONI-XMD is analyzing...</div>
 
 <div class="input-container">
     <div class="input-area">
-        <input type="text" id="query" placeholder="Ask anything..." onkeypress="if(event.key==='Enter') startChat()">
+        <input type="text" id="query" placeholder="Sema nami mwanangu..." onkeypress="if(event.key==='Enter') startChat()">
         <button onclick="startChat()"><i class="fas fa-paper-plane"></i></button>
         <button id="vBtn" class="v-btn" onclick="toggleVoice()"><i class="fas fa-volume-up"></i></button>
     </div>
@@ -128,6 +45,7 @@
 <script>
     let voiceActive = false;
     const chatBox = document.getElementById('chat-box');
+    const systemPrompt = "Wewe ni NYONI-XMD-AI, mshauri maarufu kutoka Tanzania. Unajibu kwa hekima, unatumia lugha ya Kiswahili sanifu na mchanganyiko wa lugha ya mtaani kidogo. Usijibu kwa kurudia maneno yale yale. Kila mara jitambulishe kama NYONI-XMD unapoanza maongezi mazito. Toa ushauri wa teknolojia, maisha, na ujasiriamali.";
 
     function toggleVoice() {
         voiceActive = !voiceActive;
@@ -145,12 +63,12 @@
             if(type === 'ai' && voiceActive) speak(content);
         }
         chatBox.appendChild(div);
-        window.scrollTo(0, document.body.scrollHeight);
+        chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
     }
 
     function speak(txt) {
         const s = new SpeechSynthesisUtterance(txt);
-        s.lang = 'en-US';
+        s.lang = 'sw-TZ';
         window.speechSynthesis.speak(s);
     }
 
@@ -163,18 +81,19 @@
         document.getElementById('loader').style.display = 'block';
 
         try {
-            if(val.toLowerCase().includes('draw') || val.toLowerCase().includes('picha')) {
+            if(val.toLowerCase().includes('draw') || val.toLowerCase().includes('nivutie') || val.toLowerCase().includes('picha')) {
                 const img = `https://image.pollinations.ai/prompt/${encodeURIComponent(val)}?nologo=true&seed=${Math.random()}`;
                 addMsg('ai', img, true);
             } else {
-                // DuckDuckGo Proxy - Fast & No CORS
-                const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(val)}&format=json`);
+                // Hapa tunatumia Google Gemini AI kupitia API ya bure na ya haraka
+                const res = await fetch(`https://api.giftedtech.my.id/api/ai/gemini?apikey=gifted&q=${encodeURIComponent(systemPrompt + " Swali la mtumiaji: " + val)}`);
                 const data = await res.json();
-                let reply = data.AbstractText || "I am NYONI-XMD-AI. How can I assist you today?";
+                
+                let reply = data.result || "Nipo hapa kiongozi, nimekusoma. Una lingine la kuongeza?";
                 addMsg('ai', reply);
             }
         } catch (e) {
-            addMsg('ai', "I am here. Please try asking again.");
+            addMsg('ai', "Samahani boss, nimekwama kidogo. Jaribu tena sasa hivi.");
         } finally {
             document.getElementById('loader').style.display = 'none';
         }
