@@ -1,233 +1,187 @@
 <!DOCTYPE html>
-<html lang="sw">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kiswahili Possible Questions - Author Nyoni-XMD</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>NYONI-XMD-AI | Professional Advisor</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
-        
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #f3f4f6;
-            margin: 0;
-            padding: 0;
+        :root {
+            --primary-blue: #00d2ff;
+            --dark-bg: #121212;
+            --chat-bg: #1e1e1e;
+            --text-color: #e0e0e0;
         }
 
-        /* Cover Page Styling */
-        .cover-page {
-            width: 100%;
-            max-width: 800px;
-            height: 1100px; /* A4 Ratio approx */
-            background-color: #e11d48; /* Red */
-            margin: 20px auto;
-            border: 10px solid white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            margin: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 60px 20px;
-            position: relative;
-            overflow: hidden;
-            page-break-after: always;
+            height: 100vh;
         }
 
-        .web-decor {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-        }
-
-        .cover-title {
-            font-size: 4rem;
-            font-weight: 900;
-            color: #001f3f; /* Navy Blue */
-            text-shadow: 2px 2px 0px white;
-            z-index: 10;
+        /* Header Area */
+        header {
+            background: #000;
+            padding: 15px;
             text-align: center;
-            line-height: 1;
+            border-bottom: 2px solid var(--primary-blue);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
         }
 
-        .author-circle {
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            border: 12px solid #00ffff; /* Sky Blue */
-            overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-            z-index: 10;
+        header img {
+            height: 60px;
+            filter: drop-shadow(0 0 5px var(--primary-blue));
         }
 
-        .author-circle img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top;
+        /* Chat Window */
+        #chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .author-name-tag {
-            font-size: 2rem;
-            font-weight: 900;
-            color: #001f3f;
-            background: white;
-            padding: 10px 30px;
-            border-radius: 50px;
-            z-index: 10;
-        }
-
-        /* Content Page Styling */
-        .content-page {
-            width: 100%;
-            max-width: 800px;
-            background: white;
-            margin: 20px auto;
-            padding: 50px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        h2 {
-            color: #0891b2; /* Cyan/Blue-ish */
-            border-bottom: 3px solid #0891b2;
-            padding-bottom: 10px;
-            margin-top: 40px;
-            text-transform: uppercase;
-        }
-
-        .question-list {
-            margin-top: 20px;
-        }
-
-        .question-item {
-            margin-bottom: 15px;
-            padding-left: 30px;
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 15px;
+            line-height: 1.5;
+            font-size: 15px;
             position: relative;
-            line-height: 1.6;
         }
 
-        .question-number {
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-            color: #e11d48;
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary-blue);
+            color: #000;
+            border-bottom-right-radius: 2px;
         }
 
-        @media print {
-            body { background: white; }
-            .cover-page, .content-page { margin: 0; box-shadow: none; border: none; }
+        .ai-message {
+            align-self: flex-start;
+            background: var(--chat-bg);
+            color: var(--text-color);
+            border-bottom-left-radius: 2px;
+            border: 1px solid #333;
+        }
+
+        /* Input Area */
+        .input-area {
+            background: #181818;
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #333;
+        }
+
+        input {
+            flex: 1;
+            background: #252525;
+            border: 1px solid #444;
+            padding: 12px;
+            color: white;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary-blue);
+        }
+
+        button {
+            background: var(--primary-blue);
+            border: none;
+            color: black;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px var(--primary-blue);
+        }
+
+        /* Loading Animation */
+        .typing {
+            font-style: italic;
+            font-size: 12px;
+            color: var(--primary-blue);
+            display: none;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <!-- JALADA (COVER) -->
-    <div class="cover-page">
-        <div class="web-decor" style="top:-100px; right:-100px;"></div>
-        <div class="web-decor" style="bottom:-100px; left:-100px;"></div>
+<header>
+    <img src="https://files.catbox.moe/e2xq6c.jpeg" alt="NYONI-XMD-AI LOGO">
+</header>
 
-        <div class="cover-title">
-            KISWAHILI<br>
-            <span style="font-size: 2rem; letter-spacing: 5px; color: white; -webkit-text-stroke: 1px #001f3f;">POSSIBLE QUESTIONS</span>
-        </div>
-
-        <div class="author-circle">
-            <img src="https://files.catbox.moe/di7lgw.jpg" alt="Picha ya Author Nyoni-XMD">
-        </div>
-
-        <div class="author-name-tag">
-            AUTHOR: NYONI-XMD
-        </div>
-
-        <div style="color: white; font-weight: bold; letter-spacing: 3px; z-index: 10;">
-            TIE 2024 | KIDATO CHA 5 & 6
-        </div>
+<div id="chat-window">
+    <div class="message ai-message">
+        Hello! I am <b>NYONI-XMD-AI</b>, your professional advisor. How can I help you today?<br>
+        <i>(Habari! Mimi ni NYONI-XMD-AI, mshauri wako. Naweza kukusaidia nini leo?)</i>
     </div>
+</div>
 
-    <!-- MWONGOZO WA MASOMO -->
-    <div class="content-page">
-        <h1 class="text-3xl font-black text-red-600 mb-4">MUHTASARI WA MASOMO</h1>
-        <p class="mb-6 text-gray-700 italic">Mwongozo huu unatoa picha ya jumla ya mada zilizoguswa katika maswali 100 ya mtaala mpya.</p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <div class="p-4 bg-red-50 border-l-4 border-red-500">
-                <h3 class="font-bold">Mada Kuu</h3>
-                <ul class="list-disc ml-5 text-sm">
-                    <li>Maendeleo ya Kiswahili</li>
-                    <li>Sarufi na Uchanganuzi</li>
-                    <li>Matumizi ya Lugha</li>
-                    <li>Uhakiki wa Fasihi</li>
-                </ul>
-            </div>
-            <div class="p-4 bg-cyan-50 border-l-4 border-cyan-500">
-                <h3 class="font-bold">Lengo la Kitabu</h3>
-                <p class="text-sm">Kumjengea mwanafunzi uwezo wa kujibu maswali ya tahini (Possible Questions) kwa ufasaha na ujasiri.</p>
-            </div>
-        </div>
+<div style="padding-left: 20px;" id="status-text" class="typing">NYONI-XMD is thinking...</div>
 
-        <!-- SURA YA 1 -->
-        <h2>Sura ya 1: Maendeleo ya Kiswahili</h2>
-        <div class="question-list">
-            <div class="question-item"><span class="question-number">1.</span> Changanua nadharia ya asili ya Kiswahili kwa mujibu wa ushahidi wa kihistoria na kiisimu.</div>
-            <div class="question-item"><span class="question-number">2.</span> Jadili mchango wa lahaja za pwani katika kuunda msingi wa Kiswahili sanifu.</div>
-            <div class="question-item"><span class="question-number">3.</span> Tathmini athari za kiuchumi za biashara ya masafa marefu katika uenezi wa Kiswahili barani Afrika.</div>
-            <div class="question-item"><span class="question-number">4.</span> "Kiswahili ni lugha ya Kibantu." Toa hoja tano thabiti za kiisimu kuthibitisha kauli hii.</div>
-            <div class="question-item"><span class="question-number">5.</span> Eleza mchakato wa usanifishaji wa Kiswahili ulioanza mwaka 1930 na matokeo yake.</div>
-            <div class="question-item"><span class="question-number">6.</span> Jadili mchango wa makanisa na misheni katika ukuzaji wa Kiswahili wakati wa ukoloni.</div>
-            <div class="question-item"><span class="question-number">7.</span> Tathmini nafasi ya Kiswahili kama lugha ya ukombozi katika harakati za kupigania uhuru Tanganyika.</div>
-            <div class="question-item"><span class="question-number">8.</span> Eleza dhima ya BAKITA katika kusanifisha msamiati mpya wa kiteknolojia na sayansi.</div>
-            <div class="question-item"><span class="question-number">9.</span> Jadili changamoto zinazokikabili Kiswahili kama lugha ya kufundishia katika elimu ya juu.</div>
-            <div class="question-item"><span class="question-number">10.</span> Changanua nafasi ya Kiswahili katika EAC kama lugha ya mtambuka.</div>
-            <!-- Maswali mengine 11-30 yangefuata hapa kwa mpangilio huu -->
-            <p class="text-xs text-gray-400 italic">... Maswali ya Maendeleo yanaendelea hadi 30 ...</p>
-        </div>
+<div class="input-area">
+    <input type="text" id="user-input" placeholder="Type your message here (Lugha yoyote)..." onkeypress="handleEnter(event)">
+    <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+</div>
 
-        <!-- SURA YA 2 -->
-        <h2>Sura ya 2: Sarufi na Uchanganuzi</h2>
-        <div class="question-list">
-            <div class="question-item"><span class="question-number">31.</span> Fafanua dhana ya mofimu na uainishe aina kuu za mofimu katika Kiswahili.</div>
-            <div class="question-item"><span class="question-number">32.</span> Changanua neno: *Hakutushirikishana* kulingana na muundo wa viambishi.</div>
-            <div class="question-item"><span class="question-number">33.</span> Eleza dhana ya upatanisho wa kisarufi katika ngeli za majina kwa mifano mitano.</div>
-            <div class="question-item"><span class="question-number">34.</span> Jadili tofauti kati ya sarufi mapokeo na sarufi miundo (generative grammar).</div>
-            <div class="question-item"><span class="question-number">35.</span> Changanua sentensi ifuatayo kwa kutumia njia ya matawi: "Mwanafunzi mtiifu anasoma kwa bidii."</div>
-            <div class="question-item"><span class="question-number">36.</span> Eleza dhima ya vishazi katika uundaji wa sentensi changamano.</div>
-            <div class="question-item"><span class="question-number">37.</span> Fafanua aina nane za maneno katika Kiswahili na dhima ya kila moja.</div>
-            <div class="question-item"><span class="question-number">38.</span> Jadili mchakato wa uundaji wa maneno kwa njia ya unyambulishaji.</div>
-            <div class="question-item"><span class="question-number">39.</span> Eleza tofauti kati ya kirai nomino (KN) na kirai động (KT).</div>
-            <div class="question-item"><span class="question-number">40.</span> Changanua matumizi ya viambishi rejeshi katika mazingira matatu tofauti.</div>
-            <p class="text-xs text-gray-400 italic">... Maswali ya Sarufi yanaendelea hadi 60 ...</p>
-        </div>
+<script>
+    const chatWindow = document.getElementById('chat-window');
+    const userInput = document.getElementById('user-input');
+    const statusText = document.getElementById('status-text');
 
-        <!-- SURA YA 3 -->
-        <h2>Sura ya 3: Matumizi ya Lugha na Rejista</h2>
-        <div class="question-list">
-            <div class="question-item"><span class="question-number">61.</span> Eleza dhana ya rejista na vigezo vyake vya utambuzi katika jamii.</div>
-            <div class="question-item"><span class="question-number">62.</span> Changanua sifa za lugha inayotumiwa katika rejista ya mahakamani.</div>
-            <div class="question-item"><span class="question-number">63.</span> Jadili mchango wa lugha ya mitaani (Sheng) katika kudhoofisha Kiswahili sanifu.</div>
-            <div class="question-item"><span class="question-number">64.</span> Eleza sifa za lugha ya michezo (hasa mpira) nchini Tanzania.</div>
-            <div class="question-item"><span class="question-number">65.</span> Fafanua tofauti kati ya lugha ya maandishi na lugha ya mazungumzo.</div>
-            <p class="text-xs text-gray-400 italic">... Maswali ya Rejista yanaendelea hadi 80 ...</p>
-        </div>
+    function appendMessage(role, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${role}-message`;
+        msgDiv.innerHTML = text;
+        chatWindow.appendChild(msgDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
 
-        <!-- SURA YA 4 -->
-        <h2>Sura ya 4: Fasihi na Uhakiki</h2>
-        <div class="question-list">
-            <div class="question-item"><span class="question-number">81.</span> Eleza tofauti ya msingi kati ya fasihi simulizi na fasihi andishi.</div>
-            <div class="question-item"><span class="question-number">82.</span> Jadili dhima ya fasihi simulizi katika malezi na makuzi ya mtoto.</div>
-            <div class="question-item"><span class="question-number">83.</span> Changanua nafasi ya mwanamke katika riwaya za Kiswahili za karne ya 21.</div>
-            <div class="question-item"><span class="question-number">84.</span> Tathmini umuhimu wa matumizi ya mbini za kisanaa (style) katika ushairi.</div>
-            <div class="question-item"><span class="question-number">85.</span> Jadili tofauti kati ya ushairi wa kimapokeo na ushairi wa kisasa.</div>
-            <div class="question-item"><span class="question-number">100.</span> Tathmini mustakabali wa fasihi simulizi katika ulimwengu wa dijitali.</div>
-        </div>
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
 
-        <div class="mt-20 pt-10 border-t border-gray-200 text-center">
-            <p class="font-bold text-navy-900">AUTHOR: NYONI-XMD</p>
-            <p class="text-xs text-gray-500">Haki zote zimehifadhiwa &copy; 2026</p>
-        </div>
-    </div>
+        // User Message
+        appendMessage('user', text);
+        userInput.value = '';
+        statusText.style.display = 'block';
+
+        try {
+            // Hapa AI inatumia API ya Bure ya GPT-4 kukujibu
+            const response = await axios.get(`https://api.giftedtech.my.id/api/ai/gpt4?apikey=gifted&q=${encodeURIComponent(text)}`);
+            const aiReply = response.data.result;
+            
+            statusText.style.display = 'none';
+            appendMessage('ai', aiReply);
+        } catch (error) {
+            statusText.style.display = 'none';
+            appendMessage('ai', "Sorry, NYONI-XMD encountered an error. Please try again.");
+        }
+    }
+
+    function handleEnter(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+</script>
 
 </body>
 </html>
-
